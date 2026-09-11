@@ -2,50 +2,39 @@
 
 import Image from "next/image";
 import { motion, useInView, useMotionValue, useSpring, useTransform } from "framer-motion";
-import { useRef } from "react";
+import { useRef, useState, useEffect } from "react";
 import Link from "next/link";
 
 const WA_LINK = `https://wa.me/6285817670115?text=Halo%20Warmindo%20SH!%20Saya%20mau%20pesan%20ya%20%F0%9F%8D%9C`;
 
-const menuItems = [
+const defaultMenuItems = [
   {
-    id: "indomie-goreng",
-    name: "Indomie Goreng",
-    desc: "Indomie goreng dengan topping telur, kerupuk, dan sambal spesial rumahan yang nagih!",
-    price: "Rp 8.000",
-    emoji: "🍜",
+    id: "1",
+    name: "Mie Nyemek Khas SH",
+    desc: "Mie kuah kental dengan bumbu rahasia gurih pedas & telur kocok yang gurih nagih!",
+    price: 15000,
+    emoji: "🥣",
     tag: "Best Seller",
     tagColor: "#f97316",
-    image: "/asset/Makanan__Disajikan_dalam_mangkuk.png",
+    image: "/asset/Mie_Nyemek.png",
     glow: "rgba(249,115,22,0.3)",
   },
   {
-    id: "pangsit-chili-oil",
-    name: "Pangsit Chili Oil",
-    desc: "Pangsit lembut berisi daging dengan siraman chili oil aromatik yang pedas menggoda.",
-    price: "Rp 12.000",
-    emoji: "🥟",
-    tag: "Spicy 🌶️",
-    tagColor: "#ef4444",
-    image: "/asset/Pangsit_Chili_Oil.png",
-    glow: "rgba(239,68,68,0.3)",
-  },
-  {
-    id: "mie-nyemek",
-    name: "Mie Nyemek",
-    desc: "Paduan kuah dan goreng yang sempurna — kuah sedikit, rasa penuh, bikin ketagihan.",
-    price: "Rp 9.000",
-    emoji: "🥣",
+    id: "2",
+    name: "Mie Dok-Dok Spesial",
+    desc: "Kuah medok gurih ditambah sosis sapi lezat, bakso, dan sawi segar.",
+    price: 18000,
+    emoji: "🍜",
     tag: "Favorit",
     tagColor: "#8b5cf6",
-    image: "/asset/Mie_Nyemek.png",
+    image: "/asset/The_Floating_Hero_Object.png",
     glow: "rgba(139,92,246,0.3)",
   },
   {
-    id: "es-matcha",
-    name: "Es Matcha",
-    desc: "Matcha premium dengan susu segar dan sedikit gula aren. Dingin, creamy, sempurna.",
-    price: "Rp 10.000",
+    id: "3",
+    name: "Es Matcha Creamy",
+    desc: "Matcha premium dengan susu segar dingin dan gula aren. Dingin, creamy, sempurna.",
+    price: 10000,
     emoji: "🍵",
     tag: "Trending",
     tagColor: "#10b981",
@@ -53,15 +42,26 @@ const menuItems = [
     glow: "rgba(16,185,129,0.3)",
   },
   {
-    id: "es-gula-aren",
-    name: "Es Gula Aren",
+    id: "4",
+    name: "Es Gula Aren Warkop",
     desc: "Minuman segar dengan gula aren asli Bogor, susu segar, dan es batu yang menyegarkan.",
-    price: "Rp 9.000",
+    price: 8000,
     emoji: "🧋",
     tag: "Segar",
     tagColor: "#fbbf24",
     image: "/asset/Es_Gula_Aren.png",
     glow: "rgba(251,191,36,0.3)",
+  },
+  {
+    id: "5",
+    name: "Pangsit Chili Oil Crispy",
+    desc: "Pangsit lembut renyah berisi daging dengan siraman chili oil aromatik pedas menggoda.",
+    price: 12000,
+    emoji: "🥟",
+    tag: "Spicy 🌶️",
+    tagColor: "#ef4444",
+    image: "/asset/Pangsit_Chili_Oil.png",
+    glow: "rgba(239,68,68,0.3)",
   },
 ];
 
@@ -80,6 +80,17 @@ function MenuCard({ item, index }) {
     mouseY.set((e.clientY - rect.top - rect.height / 2) / (rect.height / 2));
   };
   const handleMouseLeave = () => { mouseX.set(0); mouseY.set(0); };
+
+  const formatIDR = (num) => {
+    return new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      maximumFractionDigits: 0,
+    }).format(num);
+  };
+
+  const tagColor = item.tagColor || (item.isSpicy ? "#ef4444" : item.isRecommended ? "#f97316" : "#3b82f6");
+  const glow = item.glow || "rgba(249,115,22,0.3)";
 
   return (
     <motion.div
@@ -107,7 +118,7 @@ function MenuCard({ item, index }) {
           style={{
             position: "relative",
             height: 220,
-            background: `radial-gradient(circle at center, ${item.glow.replace("0.3", "0.12")} 0%, transparent 70%)`,
+            background: `radial-gradient(circle at center, ${glow.replace("0.3", "0.12")} 0%, transparent 70%)`,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -125,7 +136,7 @@ function MenuCard({ item, index }) {
             }}
           >
             <Image
-              src={item.image}
+              src={item.image || "/asset/The_Floating_Hero_Object.png"}
               alt={item.name}
               width={200}
               height={200}
@@ -133,7 +144,7 @@ function MenuCard({ item, index }) {
                 width: 190,
                 height: 190,
                 objectFit: "contain",
-                filter: `drop-shadow(0 20px 40px ${item.glow}) drop-shadow(0 0 30px ${item.glow.replace("0.3", "0.15")})`,
+                filter: `drop-shadow(0 20px 40px ${glow}) drop-shadow(0 0 30px ${glow.replace("0.3", "0.15")})`,
               }}
             />
           </motion.div>
@@ -145,33 +156,33 @@ function MenuCard({ item, index }) {
               top: 14,
               left: 14,
               padding: "4px 12px",
-              background: `${item.tagColor}22`,
-              border: `1px solid ${item.tagColor}55`,
+              background: `${tagColor}22`,
+              border: `1px solid ${tagColor}55`,
               borderRadius: 999,
               fontSize: "0.7rem",
               fontWeight: 700,
-              color: item.tagColor,
+              color: tagColor,
               letterSpacing: "0.05em",
               zIndex: 3,
             }}
           >
-            {item.tag}
+            {item.tag || (item.isRecommended ? "★ Best Seller" : item.isSpicy ? "Spicy 🌶️" : item.categoryName || "Pilihan")}
           </div>
         </div>
 
         {/* Info area */}
-        <div style={{ padding: "20px 24px 24px" }}>
+        <div style={{ padding: "20px 24px 24px", position: "relative", zIndex: 10 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
             <h3
               style={{
                 fontFamily: "var(--font-poppins), sans-serif",
                 fontWeight: 800,
-                fontSize: "1.1rem",
+                fontSize: "1.05rem",
                 color: "var(--text-primary)",
                 letterSpacing: "-0.01em",
               }}
             >
-              {item.emoji} {item.name}
+              {item.emoji || "🍜"} {item.name}
             </h3>
             <span
               style={{
@@ -185,27 +196,45 @@ function MenuCard({ item, index }) {
                 marginLeft: 8,
               }}
             >
-              {item.price}
+              {typeof item.price === "number" ? formatIDR(item.price) : item.price}
             </span>
           </div>
-          <p style={{ color: "var(--text-muted)", fontSize: "0.875rem", lineHeight: 1.6, marginBottom: 18 }}>
-            {item.desc}
+          <p
+            style={{
+              color: "var(--text-muted)",
+              fontSize: "0.85rem",
+              lineHeight: 1.6,
+              marginBottom: 18,
+              minHeight: 42,
+              display: "-webkit-box",
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: "vertical",
+              overflow: "hidden",
+            }}
+          >
+            {item.desc || item.description}
           </p>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", position: "relative", zIndex: 20 }}>
+            {/* Direct Link to Self-Order Module */}
             <Link
-              href="/order?table=1"
+              href="/order?table=01"
               style={{
                 display: "inline-flex",
                 alignItems: "center",
                 gap: 6,
-                fontSize: "0.8rem",
+                fontSize: "0.82rem",
                 fontWeight: 700,
                 color: "#fbbf24",
                 textDecoration: "none",
-                background: "rgba(251,191,36,0.1)",
-                padding: "6px 14px",
+                background: "rgba(251,191,36,0.12)",
+                padding: "8px 16px",
                 borderRadius: 999,
-                border: "1px solid rgba(251,191,36,0.25)",
+                border: "1px solid rgba(251,191,36,0.3)",
+                transition: "all 0.2s",
+                cursor: "pointer",
+                position: "relative",
+                zIndex: 25,
+                pointerEvents: "auto",
               }}
             >
               <span>+ Pesan Meja</span>
@@ -216,14 +245,18 @@ function MenuCard({ item, index }) {
               target="_blank"
               rel="noopener noreferrer"
               style={{
-                display: "flex",
+                display: "inline-flex",
                 alignItems: "center",
                 gap: 6,
                 fontSize: "0.8rem",
                 fontWeight: 700,
-                color: item.tagColor,
+                color: tagColor,
                 textDecoration: "none",
                 transition: "gap 0.2s",
+                cursor: "pointer",
+                position: "relative",
+                zIndex: 25,
+                pointerEvents: "auto",
               }}
             >
               <span>WA</span>
@@ -239,6 +272,34 @@ function MenuCard({ item, index }) {
 export default function MenuSection() {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
+  const [menus, setMenus] = useState(defaultMenuItems);
+
+  // Fetch menus live from database
+  useEffect(() => {
+    async function fetchMenus() {
+      try {
+        const res = await fetch("/api/menus");
+        const json = await res.json();
+        if (json.success && json.data?.menus?.length > 0) {
+          const dynamicList = json.data.menus.map((m) => ({
+            id: m.id,
+            name: m.name,
+            desc: m.description,
+            price: m.price,
+            emoji: m.categoryId === "minuman" ? "🥤" : m.categoryId === "snack" ? "🥟" : "🍜",
+            tag: m.isRecommended ? "★ Best Seller" : m.isSpicy ? "Spicy 🌶️" : m.categoryName,
+            tagColor: m.isSpicy ? "#ef4444" : m.isRecommended ? "#f97316" : "#10b981",
+            image: m.image,
+            glow: m.categoryId === "minuman" ? "rgba(16,185,129,0.3)" : m.isSpicy ? "rgba(239,68,68,0.3)" : "rgba(249,115,22,0.3)",
+          }));
+          setMenus(dynamicList);
+        }
+      } catch (e) {
+        console.warn("Using default menu items for landing page:", e);
+      }
+    }
+    fetchMenus();
+  }, []);
 
   return (
     <section id="menu" style={{ padding: "120px 24px", position: "relative", overflow: "hidden" }}>
@@ -293,7 +354,7 @@ export default function MenuSection() {
             gap: 24,
           }}
         >
-          {menuItems.map((item, i) => (
+          {menus.map((item, i) => (
             <MenuCard key={item.id} item={item} index={i} />
           ))}
         </div>
@@ -306,7 +367,7 @@ export default function MenuSection() {
           transition={{ delay: 0.5 }}
           style={{ textAlign: "center", marginTop: 60, display: "flex", justifyContent: "center", gap: 16, flexWrap: "wrap" }}
         >
-          <Link href="/order?table=1" className="btn-primary">
+          <Link href="/order?table=01" className="btn-primary">
             <span>📱</span>
             <span>Mulai Self Order Meja</span>
           </Link>
