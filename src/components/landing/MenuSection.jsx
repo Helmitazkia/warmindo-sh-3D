@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { motion, useInView, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { useRef } from "react";
+import Link from "next/link";
 
 const WA_LINK = `https://wa.me/6285817670115?text=Halo%20Warmindo%20SH!%20Saya%20mau%20pesan%20ya%20%F0%9F%8D%9C`;
 
@@ -190,27 +191,45 @@ function MenuCard({ item, index }) {
           <p style={{ color: "var(--text-muted)", fontSize: "0.875rem", lineHeight: 1.6, marginBottom: 18 }}>
             {item.desc}
           </p>
-          <a
-            href={`${WA_LINK}&text=Halo%20Warmindo%20SH!%20Saya%20mau%20pesan%20${encodeURIComponent(item.name)}%20dong%20%F0%9F%8D%9C`}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-              fontSize: "0.8rem",
-              fontWeight: 700,
-              color: item.tagColor,
-              textDecoration: "none",
-              padding: "8px 0",
-              transition: "gap 0.2s",
-            }}
-            onMouseEnter={(e) => { e.currentTarget.style.gap = "14px"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.gap = "8px"; }}
-          >
-            <span>Pesan sekarang</span>
-            <span>→</span>
-          </a>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <Link
+              href="/order?table=1"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                fontSize: "0.8rem",
+                fontWeight: 700,
+                color: "#fbbf24",
+                textDecoration: "none",
+                background: "rgba(251,191,36,0.1)",
+                padding: "6px 14px",
+                borderRadius: 999,
+                border: "1px solid rgba(251,191,36,0.25)",
+              }}
+            >
+              <span>+ Pesan Meja</span>
+            </Link>
+
+            <a
+              href={`${WA_LINK}&text=Halo%20Warmindo%20SH!%20Saya%20mau%20pesan%20${encodeURIComponent(item.name)}%20dong%20%F0%9F%8D%9C`}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+                fontSize: "0.8rem",
+                fontWeight: 700,
+                color: item.tagColor,
+                textDecoration: "none",
+                transition: "gap 0.2s",
+              }}
+            >
+              <span>WA</span>
+              <span>→</span>
+            </a>
+          </div>
         </div>
       </motion.div>
     </motion.div>
@@ -262,7 +281,7 @@ export default function MenuSection() {
             <span className="gradient-text">Best Sellers</span>
           </h2>
           <p style={{ color: "var(--text-muted)", fontSize: "1.05rem", maxWidth: 520, margin: "0 auto" }}>
-            Dimasak segar setiap hari, dijamin bikin nagih. Pilih favoritmu!
+            Dimasak segar setiap hari, dijamin bikin nagih. Pilih favoritmu atau pesan langsung dari meja!
           </p>
         </motion.div>
 
@@ -285,11 +304,15 @@ export default function MenuSection() {
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
           transition={{ delay: 0.5 }}
-          style={{ textAlign: "center", marginTop: 60 }}
+          style={{ textAlign: "center", marginTop: 60, display: "flex", justifyContent: "center", gap: 16, flexWrap: "wrap" }}
         >
-          <a href={WA_LINK} target="_blank" rel="noopener noreferrer" className="btn-primary">
-            <span>📋</span>
-            <span>Lihat Menu Lengkap di WA</span>
+          <Link href="/order?table=1" className="btn-primary">
+            <span>📱</span>
+            <span>Mulai Self Order Meja</span>
+          </Link>
+          <a href={WA_LINK} target="_blank" rel="noopener noreferrer" className="btn-ghost">
+            <span>💬</span>
+            <span>Chat via WhatsApp</span>
           </a>
         </motion.div>
       </div>

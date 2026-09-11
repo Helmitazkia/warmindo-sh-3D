@@ -3,6 +3,7 @@
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
 import Image from "next/image";
+import Link from "next/link";
 
 const WA_NUMBER = "6285817670115";
 const WA_LINK = `https://wa.me/${WA_NUMBER}?text=Halo%20Warmindo%20SH!%20Saya%20mau%20pesan%20ya%20%F0%9F%8D%9C`;
@@ -65,28 +66,84 @@ export default function CTAFooter() {
             zIndex: 1,
           }}
         >
-          {/* Floating bowl image */}
-          <motion.div
-            className="float-slow"
-            initial={{ opacity: 0, scale: 0.7 }}
-            animate={isInView ? { opacity: 1, scale: 1 } : {}}
-            transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
-            style={{ marginBottom: 32 }}
+          {/* Floating Images Banner */}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              marginBottom: 40,
+            }}
           >
-            <Image
-              src="/asset/The_Floating_Hero_Object.png"
-              alt="Mangkuk Warmindo SH"
-              width={160}
-              height={160}
-              style={{
-                width: 140,
-                height: 140,
-                objectFit: "contain",
-                filter: "drop-shadow(0 20px 40px rgba(249,115,22,0.4))",
-                display: "inline-block",
-              }}
-            />
-          </motion.div>
+            {/* Left Image */}
+            <motion.div
+              className="float-slow"
+              initial={{ opacity: 0, x: 40, rotate: -20, scale: 0.7 }}
+              animate={isInView ? { opacity: 1, x: 0, rotate: -10, scale: 1 } : {}}
+              transition={{ duration: 0.8, delay: 0.1, ease: "easeOut" }}
+              style={{ zIndex: 1, marginRight: "-40px" }}
+            >
+              <Image
+                src="/asset/Mie_Nyemek.png"
+                alt="Mie Nyemek"
+                width={130}
+                height={130}
+                style={{
+                  width: 120,
+                  height: 120,
+                  objectFit: "contain",
+                  filter: "drop-shadow(0 15px 30px rgba(249,115,22,0.3))",
+                  display: "inline-block",
+                }}
+              />
+            </motion.div>
+
+            {/* Center Image */}
+            <motion.div
+              className="float-slow"
+              initial={{ opacity: 0, scale: 0.6, y: 20 }}
+              animate={isInView ? { opacity: 1, scale: 1, y: 0 } : {}}
+              transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
+              style={{ zIndex: 2 }}
+            >
+              <Image
+                src="/asset/The_Floating_Hero_Object.png"
+                alt="Mangkuk Warmindo SH"
+                width={180}
+                height={180}
+                style={{
+                  width: 170,
+                  height: 170,
+                  objectFit: "contain",
+                  filter: "drop-shadow(0 20px 40px rgba(249,115,22,0.4))",
+                  display: "inline-block",
+                }}
+              />
+            </motion.div>
+
+            {/* Right Image */}
+            <motion.div
+              className="float-slow"
+              initial={{ opacity: 0, x: -40, rotate: 20, scale: 0.7 }}
+              animate={isInView ? { opacity: 1, x: 0, rotate: 10, scale: 1 } : {}}
+              transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
+              style={{ zIndex: 1, marginLeft: "-40px" }}
+            >
+              <Image
+                src="/asset/Es_Matcha.png"
+                alt="Es Matcha"
+                width={130}
+                height={130}
+                style={{
+                  width: 120,
+                  height: 120,
+                  objectFit: "contain",
+                  filter: "drop-shadow(0 15px 30px rgba(0,200,100,0.3))",
+                  display: "inline-block",
+                }}
+              />
+            </motion.div>
+          </div>
 
           <motion.div
             initial={{ opacity: 0, y: 40 }}
@@ -119,44 +176,68 @@ export default function CTAFooter() {
                 fontFamily: "var(--font-poppins), sans-serif",
               }}
             >
-              Pesan sekarang lewat WhatsApp. Mie racikan khas, kuah hangat gurih,
+              Pesan sekarang langsung dari meja Anda atau chat lewat WhatsApp. Mie racikan khas, kuah hangat gurih,
               dan es warkop menanti kamu di Warmindo SH.
             </p>
           </motion.div>
 
-          {/* CTA Button */}
+          {/* CTA Buttons */}
           <motion.div
             initial={{ opacity: 0, scale: 0.85 }}
             animate={isInView ? { opacity: 1, scale: 1 } : {}}
             transition={{ duration: 0.6, delay: 0.4 }}
+            style={{ display: "flex", justifyContent: "center", gap: 16, flexWrap: "wrap" }}
           >
-            <motion.a
-              href={WA_LINK}
-              target="_blank"
-              rel="noopener noreferrer"
-              whileHover={{ scale: 1.06, y: -4 }}
-              whileTap={{ scale: 0.96 }}
+            <Link
+              href="/order?table=1"
               style={{
                 display: "inline-flex",
                 alignItems: "center",
-                gap: 16,
-                padding: "20px 48px",
-                background: "linear-gradient(135deg, #f97316 0%, #eab308 100%)",
+                gap: 14,
+                padding: "18px 40px",
+                background: "linear-gradient(135deg, #f97316 0%, #ea580c 100%)",
                 borderRadius: 99,
-                color: "#000",
+                color: "#ffffff",
                 fontWeight: 800,
-                fontSize: "1.25rem",
+                fontSize: "1.1rem",
                 textDecoration: "none",
                 boxShadow:
                   "0 12px 40px rgba(249, 115, 22, 0.5), inset 0 1px 0 rgba(255,255,255,0.4)",
-                transition: "box-shadow 0.3s ease",
+                transition: "box-shadow 0.3s ease, transform 0.2s ease",
                 fontFamily: "var(--font-poppins), sans-serif",
               }}
               className="btn-glow"
             >
-              <span style={{ fontSize: "1.6rem" }}>💬</span>
-              <span>Pesan via WhatsApp Now</span>
+              <span style={{ fontSize: "1.4rem" }}>📱</span>
+              <span>Self Order di Meja</span>
               <span style={{ fontSize: "1.2rem", opacity: 0.8 }}>→</span>
+            </Link>
+
+            <motion.a
+              href={WA_LINK}
+              target="_blank"
+              rel="noopener noreferrer"
+              whileHover={{ scale: 1.04, y: -2 }}
+              whileTap={{ scale: 0.96 }}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 12,
+                padding: "18px 36px",
+                background: "rgba(255,255,255,0.06)",
+                border: "1px solid var(--border-glass)",
+                borderRadius: 99,
+                color: "var(--text-primary)",
+                fontWeight: 700,
+                fontSize: "1rem",
+                textDecoration: "none",
+                backdropFilter: "blur(12px)",
+                transition: "all 0.3s ease",
+                fontFamily: "var(--font-poppins), sans-serif",
+              }}
+            >
+              <span style={{ fontSize: "1.3rem" }}>💬</span>
+              <span>Pesan via WhatsApp</span>
             </motion.a>
           </motion.div>
 

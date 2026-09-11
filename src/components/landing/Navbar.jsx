@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import Link from "next/link";
 
 const WA_NUMBER = "6285817670115";
 const WA_LINK = `https://wa.me/${WA_NUMBER}?text=Halo%20Warmindo%20SH!%20Saya%20mau%20pesan%20ya%20%F0%9F%8D%9C`;
@@ -10,6 +11,7 @@ const navLinks = [
   { label: "Home", href: "#home", icon: "🏠" },
   { label: "Menu", href: "#menu", icon: "🍽️" },
   { label: "Lokasi", href: "#lokasi", icon: "📍" },
+  { label: "Self Order Meja", href: "/order?table=1", icon: "📱", isHighlight: true },
 ];
 
 export default function Navbar() {
@@ -115,39 +117,64 @@ export default function Navbar() {
         {/* ── NAV LINKS — desktop ── */}
         <ul
           className="nav-links-desktop"
-          style={{ display: "flex", gap: 4, listStyle: "none", margin: 0, padding: 0 }}
+          style={{ display: "flex", gap: 6, listStyle: "none", margin: 0, padding: 0 }}
         >
           {navLinks.map((link) => (
             <li key={link.href}>
-              <a
-                href={link.href}
-                className="nav-link-item"
-                style={{
-                  color: "var(--text-muted)",
-                  textDecoration: "none",
-                  fontWeight: 600,
-                  fontSize: "0.875rem",
-                  padding: "8px 16px",
-                  borderRadius: 10,
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 7,
-                  transition: "color 0.2s, background 0.2s",
-                  letterSpacing: "0.01em",
-                  fontFamily: "var(--font-poppins), sans-serif",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.color = "var(--accent-orange)";
-                  e.currentTarget.style.background = "rgba(249,115,22,0.1)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.color = "var(--text-muted)";
-                  e.currentTarget.style.background = "transparent";
-                }}
-              >
-                <span style={{ fontSize: "1rem", lineHeight: 1 }}>{link.icon}</span>
-                <span>{link.label}</span>
-              </a>
+              {link.href.startsWith("/") ? (
+                <Link
+                  href={link.href}
+                  className="nav-link-item"
+                  style={{
+                    color: link.isHighlight ? "#fbbf24" : "var(--text-muted)",
+                    background: link.isHighlight ? "rgba(251,191,36,0.1)" : "transparent",
+                    border: link.isHighlight ? "1px solid rgba(251,191,36,0.3)" : "none",
+                    textDecoration: "none",
+                    fontWeight: 600,
+                    fontSize: "0.875rem",
+                    padding: "7px 14px",
+                    borderRadius: 10,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
+                    transition: "all 0.2s",
+                    fontFamily: "var(--font-poppins), sans-serif",
+                  }}
+                >
+                  <span style={{ fontSize: "1rem", lineHeight: 1 }}>{link.icon}</span>
+                  <span>{link.label}</span>
+                </Link>
+              ) : (
+                <a
+                  href={link.href}
+                  className="nav-link-item"
+                  style={{
+                    color: "var(--text-muted)",
+                    textDecoration: "none",
+                    fontWeight: 600,
+                    fontSize: "0.875rem",
+                    padding: "8px 16px",
+                    borderRadius: 10,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 7,
+                    transition: "color 0.2s, background 0.2s",
+                    letterSpacing: "0.01em",
+                    fontFamily: "var(--font-poppins), sans-serif",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.color = "var(--accent-orange)";
+                    e.currentTarget.style.background = "rgba(249,115,22,0.1)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.color = "var(--text-muted)";
+                    e.currentTarget.style.background = "transparent";
+                  }}
+                >
+                  <span style={{ fontSize: "1rem", lineHeight: 1 }}>{link.icon}</span>
+                  <span>{link.label}</span>
+                </a>
+              )}
             </li>
           ))}
         </ul>
@@ -265,49 +292,66 @@ export default function Navbar() {
               }}
             >
               {navLinks.map((link) => (
-                <a
-                  key={link.href}
-                  href={link.href}
-                  onClick={() => setMenuOpen(false)}
-                  style={{
-                    color: "var(--text-primary)",
-                    textDecoration: "none",
-                    fontWeight: 600,
-                    fontSize: "0.95rem",
-                    padding: "12px 16px",
-                    borderRadius: 12,
-                    transition: "all 0.15s",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 12,
-                    fontFamily: "var(--font-poppins), sans-serif",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = "rgba(249,115,22,0.1)";
-                    e.currentTarget.style.color = "var(--accent-orange)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = "transparent";
-                    e.currentTarget.style.color = "var(--text-primary)";
-                  }}
-                >
-                  <span
+                link.href.startsWith("/") ? (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    onClick={() => setMenuOpen(false)}
                     style={{
-                      width: 36,
-                      height: 36,
-                      borderRadius: 10,
-                      background: "rgba(249,115,22,0.1)",
+                      color: link.isHighlight ? "#fbbf24" : "var(--text-primary)",
+                      background: link.isHighlight ? "rgba(251,191,36,0.12)" : "transparent",
+                      textDecoration: "none",
+                      fontWeight: 600,
+                      fontSize: "0.95rem",
+                      padding: "12px 16px",
+                      borderRadius: 12,
+                      transition: "all 0.15s",
                       display: "flex",
                       alignItems: "center",
-                      justifyContent: "center",
-                      fontSize: "1.1rem",
-                      flexShrink: 0,
+                      gap: 12,
+                      fontFamily: "var(--font-poppins), sans-serif",
                     }}
                   >
-                    {link.icon}
-                  </span>
-                  <span>{link.label}</span>
-                </a>
+                    <span style={{ fontSize: "1.1rem" }}>{link.icon}</span>
+                    <span>{link.label}</span>
+                  </Link>
+                ) : (
+                  <a
+                    key={link.href}
+                    href={link.href}
+                    onClick={() => setMenuOpen(false)}
+                    style={{
+                      color: "var(--text-primary)",
+                      textDecoration: "none",
+                      fontWeight: 600,
+                      fontSize: "0.95rem",
+                      padding: "12px 16px",
+                      borderRadius: 12,
+                      transition: "all 0.15s",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 12,
+                      fontFamily: "var(--font-poppins), sans-serif",
+                    }}
+                  >
+                    <span
+                      style={{
+                        width: 36,
+                        height: 36,
+                        borderRadius: 10,
+                        background: "rgba(249,115,22,0.1)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontSize: "1.1rem",
+                        flexShrink: 0,
+                      }}
+                    >
+                      {link.icon}
+                    </span>
+                    <span>{link.label}</span>
+                  </a>
+                )
               ))}
 
               {/* Mobile WA Button inside dropdown */}

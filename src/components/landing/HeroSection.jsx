@@ -257,9 +257,7 @@ export default function HeroSection() {
             style={{ display: "flex", gap: 14, flexWrap: "wrap", marginBottom: 52 }}
           >
             <a
-              href={WA_LINK}
-              target="_blank"
-              rel="noopener noreferrer"
+              href="/order?table=1"
               style={{
                 display: "inline-flex",
                 alignItems: "center",
@@ -284,8 +282,8 @@ export default function HeroSection() {
                 e.currentTarget.style.boxShadow = "0 6px 28px rgba(249,115,22,0.45), inset 0 1px 0 rgba(255,255,255,0.15)";
               }}
             >
-              <span>🛵</span>
-              <span>Pesan Sekarang</span>
+              <span>📱</span>
+              <span>Self Order Meja</span>
             </a>
 
             <a
@@ -371,6 +369,7 @@ export default function HeroSection() {
           initial={{ opacity: 0, scale: 0.75 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 1.1, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
+          className="hero-image-wrapper"
         >
           {/* Multi-layer glow rings */}
           <div
@@ -421,9 +420,109 @@ export default function HeroSection() {
             />
           </motion.div>
 
+          {/* ── Floating Side Dishes ── */}
+          {/* 1. Es Matcha (Top Right) */}
+          <motion.div
+            className="floating-dish floating-matcha-item"
+            style={{ position: "absolute", top: "-5%", right: "-6%", zIndex: 3 }}
+            animate={{ y: [0, -16, 0], rotate: [0, 6, 0] }}
+            transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut" }}
+            whileHover={{ scale: 1.1, rotate: 8 }}
+          >
+            <div style={{ position: "relative", display: "inline-block" }}>
+              <Image
+                src="/asset/Es_Matcha.png"
+                alt="Es Matcha Segar"
+                width={190}
+                height={190}
+                className="hero-dish-img"
+                style={{
+                  width: 175,
+                  height: "auto",
+                  objectFit: "contain",
+                  filter: "drop-shadow(0 15px 30px rgba(16, 185, 129, 0.45)) drop-shadow(0 0 45px rgba(16, 185, 129, 0.25))",
+                }}
+              />
+              <div
+                className="dish-badge-pill"
+                style={{
+                  position: "absolute",
+                  bottom: "2px",
+                  right: "-8px",
+                  background: "rgba(6, 78, 59, 0.85)",
+                  backdropFilter: "blur(14px)",
+                  WebkitBackdropFilter: "blur(14px)",
+                  color: "#6ee7b7",
+                  fontWeight: 700,
+                  fontSize: "0.72rem",
+                  padding: "5px 12px",
+                  borderRadius: 999,
+                  border: "1px solid rgba(52, 211, 153, 0.35)",
+                  boxShadow: "0 6px 20px rgba(0,0,0,0.4)",
+                  whiteSpace: "nowrap",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 5,
+                }}
+              >
+                <span>🍵</span> Es Matcha
+              </div>
+            </div>
+          </motion.div>
+
+          {/* 2. Pangsit Chili Oil (Bottom Left) */}
+          <motion.div
+            className="floating-dish floating-pangsit-item"
+            style={{ position: "absolute", bottom: "-5%", left: "-6%", zIndex: 3 }}
+            animate={{ y: [0, 16, 0], rotate: [0, -6, 0] }}
+            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 0.8 }}
+            whileHover={{ scale: 1.1, rotate: -8 }}
+          >
+            <div style={{ position: "relative", display: "inline-block" }}>
+              <Image
+                src="/asset/Pangsit_Chili_Oil.png"
+                alt="Pangsit Chili Oil Lezat"
+                width={210}
+                height={210}
+                className="hero-dish-img"
+                style={{
+                  width: 195,
+                  height: "auto",
+                  objectFit: "contain",
+                  filter: "drop-shadow(0 15px 30px rgba(220, 38, 38, 0.5)) drop-shadow(0 0 50px rgba(249, 115, 22, 0.3))",
+                }}
+              />
+              <div
+                className="dish-badge-pill"
+                style={{
+                  position: "absolute",
+                  top: "2px",
+                  left: "-8px",
+                  background: "rgba(127, 29, 29, 0.85)",
+                  backdropFilter: "blur(14px)",
+                  WebkitBackdropFilter: "blur(14px)",
+                  color: "#fca5a5",
+                  fontWeight: 700,
+                  fontSize: "0.72rem",
+                  padding: "5px 12px",
+                  borderRadius: 999,
+                  border: "1px solid rgba(248, 113, 113, 0.35)",
+                  boxShadow: "0 6px 20px rgba(0,0,0,0.4)",
+                  whiteSpace: "nowrap",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 5,
+                }}
+              >
+                <span>🥟</span> Pangsit Chili Oil
+              </div>
+            </div>
+          </motion.div>
+
           {/* ── Floating badges ── */}
           <motion.div
-            style={{ position: "absolute", top: "6%", left: "2%" }}
+            className="hero-badge-topleft"
+            style={{ position: "absolute", top: "12%", left: "6%", zIndex: 4 }}
             animate={{ y: [0, -10, 0] }}
             transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
           >
@@ -432,7 +531,7 @@ export default function HeroSection() {
                 display: "flex",
                 alignItems: "center",
                 gap: 10,
-                padding: "12px 18px",
+                padding: "10px 16px",
                 background: "var(--bg-card)",
                 backdropFilter: "blur(20px)",
                 WebkitBackdropFilter: "blur(20px)",
@@ -443,29 +542,30 @@ export default function HeroSection() {
             >
               <div
                 style={{
-                  width: 34,
-                  height: 34,
+                  width: 32,
+                  height: 32,
                   borderRadius: 10,
                   background: "rgba(249,115,22,0.2)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  fontSize: 16,
+                  fontSize: 15,
                 }}
               >
                 🔥
               </div>
               <div>
-                <div style={{ fontWeight: 700, fontSize: "0.8rem", color: "#fbbf24" }}>
+                <div style={{ fontWeight: 700, fontSize: "0.78rem", color: "#fbbf24" }}>
                   Best Seller
                 </div>
-                <div style={{ fontSize: "0.7rem", color: "#6b7280" }}>Indomie Goreng</div>
+                <div style={{ fontSize: "0.68rem", color: "#9ca3af" }}>Indomie Goreng</div>
               </div>
             </div>
           </motion.div>
 
           <motion.div
-            style={{ position: "absolute", bottom: "8%", right: "0%" }}
+            className="hero-badge-bottomright"
+            style={{ position: "absolute", bottom: "14%", right: "4%", zIndex: 4 }}
             animate={{ y: [0, 10, 0] }}
             transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1.5 }}
           >
@@ -474,7 +574,7 @@ export default function HeroSection() {
                 display: "flex",
                 alignItems: "center",
                 gap: 10,
-                padding: "12px 18px",
+                padding: "10px 16px",
                 background: "var(--bg-card)",
                 backdropFilter: "blur(20px)",
                 WebkitBackdropFilter: "blur(20px)",
@@ -485,46 +585,47 @@ export default function HeroSection() {
             >
               <div
                 style={{
-                  width: 34,
-                  height: 34,
+                  width: 32,
+                  height: 32,
                   borderRadius: 10,
                   background: "rgba(52,211,153,0.2)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  fontSize: 16,
+                  fontSize: 15,
                 }}
               >
                 ✅
               </div>
               <div>
-                <div style={{ fontWeight: 700, fontSize: "0.8rem", color: "#34d399" }}>
+                <div style={{ fontWeight: 700, fontSize: "0.78rem", color: "#34d399" }}>
                   Mulai Rp 8.000
                 </div>
-                <div style={{ fontSize: "0.7rem", color: "#6b7280" }}>Harga Terjangkau</div>
+                <div style={{ fontSize: "0.68rem", color: "#9ca3af" }}>Harga Terjangkau</div>
               </div>
             </div>
           </motion.div>
 
           {/* Spice icon floating */}
           <motion.div
-            style={{ position: "absolute", top: "35%", right: "-4%" }}
+            className="hero-spice-icon"
+            style={{ position: "absolute", top: "45%", right: "-2%", zIndex: 4 }}
             animate={{ y: [0, -14, 0], rotate: [0, 10, 0] }}
             transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 0.8 }}
           >
             <div
               style={{
-                width: 48,
-                height: 48,
+                width: 44,
+                height: 44,
                 borderRadius: 14,
-                background: "rgba(239,68,68,0.15)",
+                background: "rgba(239,68,68,0.18)",
                 backdropFilter: "blur(16px)",
-                border: "1px solid rgba(239,68,68,0.25)",
+                border: "1px solid rgba(239,68,68,0.3)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                fontSize: 22,
-                boxShadow: "0 8px 24px rgba(0,0,0,0.3)",
+                fontSize: 20,
+                boxShadow: "0 8px 24px rgba(0,0,0,0.35)",
               }}
             >
               🌶️
@@ -533,45 +634,73 @@ export default function HeroSection() {
         </motion.div>
       </div>
 
-      {/* ── Scroll indicator ── */}
-      {/* <motion.div
-        style={{
-          position: "absolute",
-          bottom: 28,
-          left: "50%",
-          translateX: "-50%",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          gap: 6,
-          color: "#374151",
-          fontSize: "0.7rem",
-          letterSpacing: "0.1em",
-          textTransform: "uppercase",
-          zIndex: 2,
-        }}
-        animate={{ y: [0, 6, 0] }}
-        transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}
-      >
-        <svg width="14" height="22" viewBox="0 0 14 22" fill="none">
-          <rect x="1" y="1" width="12" height="20" rx="6" stroke="currentColor" strokeWidth="1.5" />
-          <motion.rect
-            x="5.5" y="4" width="3" height="5" rx="1.5" fill="currentColor"
-            animate={{ y: [0, 6, 0], opacity: [1, 0.3, 1] }}
-            transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}
-          />
-        </svg>
-      </motion.div> */}
-
       <style>{`
         @media (max-width: 860px) {
           .hero-grid {
             grid-template-columns: 1fr !important;
-            gap: 3rem !important;
+            gap: 2.5rem !important;
             text-align: center;
           }
           .hero-grid > div:last-child { order: -1; }
           .hero-grid > div:first-child > div:last-child { justify-content: center; }
+
+          .hero-image-wrapper {
+            margin-top: 1rem;
+            padding: 1rem 0;
+          }
+
+          .hero-dish-img {
+            width: 120px !important;
+          }
+
+          .floating-matcha-item {
+            top: -6% !important;
+            right: -2% !important;
+          }
+
+          .floating-pangsit-item {
+            bottom: -6% !important;
+            left: -2% !important;
+          }
+
+          .dish-badge-pill {
+            font-size: 0.65rem !important;
+            padding: 3px 9px !important;
+          }
+
+          .hero-badge-topleft {
+            top: 2% !important;
+            left: 0% !important;
+          }
+
+          .hero-badge-bottomright {
+            bottom: 2% !important;
+            right: 0% !important;
+          }
+
+          .hero-spice-icon {
+            display: none !important;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .hero-dish-img {
+            width: 95px !important;
+          }
+
+          .floating-matcha-item {
+            top: -8% !important;
+            right: -4% !important;
+          }
+
+          .floating-pangsit-item {
+            bottom: -8% !important;
+            left: -4% !important;
+          }
+
+          .hero-badge-topleft, .hero-badge-bottomright {
+            scale: 0.9;
+          }
         }
       `}</style>
     </section>

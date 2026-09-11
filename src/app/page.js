@@ -1,8 +1,8 @@
-import Navbar from "./components/Navbar";
-import HeroSection from "./components/HeroSection";
-import MenuSection from "./components/MenuSection";
-import VibeSection from "./components/VibeSection";
-import CTAFooter from "./components/CTAFooter";
+import Navbar from "@/components/landing/Navbar";
+import HeroSection from "@/components/landing/HeroSection";
+import MenuSection from "@/components/landing/MenuSection";
+import VibeSection from "@/components/landing/VibeSection";
+import CTAFooter from "@/components/landing/CTAFooter";
 
 export default function Home() {
   return (
