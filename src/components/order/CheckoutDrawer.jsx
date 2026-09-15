@@ -21,7 +21,8 @@ export default function CheckoutDrawer({
   const [guestCount, setGuestCount] = useState(1);
   const [tableNotes, setTableNotes] = useState("");
   const [selectedPayment, setSelectedPayment] = useState("CASH");
-  const [paymentProof, setPaymentProof] = useState(null);
+  const [paymentProofFile, setPaymentProofFile] = useState(null);
+  const [paymentProofPreview, setPaymentProofPreview] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
@@ -51,7 +52,8 @@ export default function CheckoutDrawer({
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setPaymentProof(URL.createObjectURL(file));
+      setPaymentProofFile(file);
+      setPaymentProofPreview(URL.createObjectURL(file));
     }
   };
 
@@ -83,12 +85,37 @@ export default function CheckoutDrawer({
       return;
     }
 
-    if ((selectedPayment === "QRIS" || selectedPayment === "TRANSFER") && !paymentProof) {
+    if ((selectedPayment === "QRIS" || selectedPayment === "TRANSFER") && !paymentProofFile) {
       setErrorMsg("Mohon upload bukti transfer / screenshot pembayaran QRIS.");
       return;
     }
 
     setIsSubmitting(true);
+
+    // Upload payment proof file terlebih dahulu (jika ada)
+    let uploadedProofUrl = null;
+    if (paymentProofFile && (selectedPayment === "QRIS" || selectedPayment === "TRANSFER")) {
+      try {
+        const uploadForm = new FormData();
+        uploadForm.append("file", paymentProofFile);
+        const uploadRes = await fetch("/api/upload", {
+          method: "POST",
+          body: uploadForm,
+        });
+        const uploadJson = await uploadRes.json();
+        if (uploadJson.success) {
+          uploadedProofUrl = uploadJson.url;
+        } else {
+          setErrorMsg(`Upload bukti gagal: ${uploadJson.message}`);
+          setIsSubmitting(false);
+          return;
+        }
+      } catch (err) {
+        setErrorMsg("Upload bukti pembayaran gagal. Coba lagi.");
+        setIsSubmitting(false);
+        return;
+      }
+    }
 
     const payload = {
       tableNumber: tableNumber || "1",
@@ -105,7 +132,7 @@ export default function CheckoutDrawer({
       })),
       totalAmount: totalPrice,
       paymentMethod: selectedPayment,
-      paymentProofUrl: paymentProof,
+      paymentProofUrl: uploadedProofUrl,
       tableNotes: tableNotes.trim(),
     };
 
@@ -514,9 +541,18 @@ export default function CheckoutDrawer({
                                 color: "var(--text-muted)",
                               }}
                             />
-                            {paymentProof && (
-                              <div style={{ marginTop: 8, fontSize: "0.75rem", color: "#34d399", display: "flex", alignItems: "center", gap: 4 }}>
-                                <span>✅ Bukti pembayaran terpilih</span>
+                            {paymentProofPreview && (
+                              <div style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 8 }}>
+                                <div style={{ fontSize: "0.75rem", color: "#34d399", display: "flex", alignItems: "center", gap: 4 }}>
+                                  <span>✅ Bukti pembayaran terpilih</span>
+                                </div>
+                                <Image
+                                  src={paymentProofPreview}
+                                  alt="Bukti Pembayaran"
+                                  width={100}
+                                  height={150}
+                                  style={{ objectFit: "cover", borderRadius: 8, border: "1px solid var(--border-glass)" }}
+                                />
                               </div>
                             )}
                           </div>
