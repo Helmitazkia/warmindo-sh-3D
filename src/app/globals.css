@@ -87,7 +87,31 @@
 
 /* ── HIDE SCROLLBAR ───────────────────────────── */
 .hide-scrollbar { scrollbar-width: none; }
-.hide-scrollbar::-webkit-scrollbar { display: none; }
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.mobile-safe-bottom {
+  padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+}
+
+.mobile-fab {
+  bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  right: 24px;
+}
+
+@media (max-width: 768px) {
+  .mobile-safe-bottom {
+    padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+  .mobile-fab {
+    bottom: calc(80px + env(safe-area-inset-bottom, 0px)) !important;
+    left: 50% !important;
+    right: auto !important;
+    transform: translateX(-50%) !important;
+    width: max-content !important;
+  }
+}
 
 /* ── RESET & BASE ──────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }

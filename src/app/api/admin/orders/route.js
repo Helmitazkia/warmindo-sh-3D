@@ -1,12 +1,16 @@
 import { NextResponse } from "next/server";
-import { query, getDbPool } from "@/lib/db";
+import { getDbPool } from "@/lib/db";
 
 export async function GET() {
+  const db = getDbPool();
+  let connection;
   try {
-    // Ambil pesanan yang aktif
-    const orders = await query(
-      `SELECT o.id, o.order_code, o.table_number, o.customer_name, 
-              o.total_amount, o.payment_method, o.payment_status, 
+    connection = await db.getConnection();
+
+    // Ambil pesanan aktif
+    const [orders] = await connection.execute(
+      `SELECT o.id, o.order_code, o.table_number, o.customer_name,
+              o.total_amount, o.payment_method, o.payment_status,
               o.order_status, o.notes, o.created_at, o.payment_proof_url
        FROM orders o
        WHERE o.order_status IN ('PENDING', 'COOKING')
@@ -17,20 +21,30 @@ export async function GET() {
       return NextResponse.json({ success: true, data: [] });
     }
 
+    // Ambil items untuk semua pesanan aktif
+    // Gunakan format placeholder manual untuk IN clause agar kompatibel dengan mysql2
     const orderIds = orders.map((o) => o.id);
-    const items = await query(
-      `SELECT id, order_id, menu_name, unit_price, quantity, subtotal, notes 
-       FROM order_items 
-       WHERE order_id IN (?)`,
-      [orderIds.length > 0 ? orderIds : [0]] 
+    const placeholders = orderIds.map(() => "?").join(", ");
+
+    const [items] = await connection.execute(
+      `SELECT oi.id, oi.order_id, oi.menu_name, oi.unit_price AS price, oi.quantity, oi.subtotal, oi.notes
+       FROM order_items oi
+       WHERE oi.order_id IN (${placeholders})`,
+      orderIds
     );
 
-    const data = orders.map((o) => {
-      return {
-        ...o,
-        items: items.filter((i) => i.order_id === o.id),
-      };
-    });
+    // Gabungkan items ke masing-masing order
+    const data = orders.map((o) => ({
+      ...o,
+      total_amount: Number(o.total_amount),
+      items: items
+        .filter((i) => i.order_id === o.id)
+        .map((i) => ({
+          ...i,
+          price: Number(i.price),
+          subtotal: Number(i.subtotal),
+        })),
+    }));
 
     return NextResponse.json({ success: true, data });
   } catch (error) {
@@ -39,6 +53,8 @@ export async function GET() {
       { success: false, error: "Database error", message: error.message },
       { status: 500 }
     );
+  } finally {
+    if (connection) connection.release();
   }
 }
 
@@ -47,27 +63,37 @@ export async function PATCH(request) {
     const { id, action } = await request.json();
 
     if (!id || !action) {
-      return NextResponse.json({ success: false, message: "Invalid request payload" }, { status: 400 });
+      return NextResponse.json(
+        { success: false, message: "Invalid request payload" },
+        { status: 400 }
+      );
     }
 
-    let queryStr = "";
+    let sql = "";
     let params = [];
 
     if (action === "COOKING") {
-      queryStr = "UPDATE orders SET order_status = 'COOKING', payment_status = 'PAID' WHERE id = ?";
+      sql = "UPDATE orders SET order_status = 'COOKING', payment_status = 'PAID' WHERE id = ?";
       params = [id];
     } else if (action === "COMPLETED") {
-      queryStr = "UPDATE orders SET order_status = 'COMPLETED' WHERE id = ?";
+      sql = "UPDATE orders SET order_status = 'COMPLETED', updated_at = NOW() WHERE id = ?";
       params = [id];
     } else {
-      return NextResponse.json({ success: false, message: "Invalid action" }, { status: 400 });
+      return NextResponse.json(
+        { success: false, message: "Invalid action" },
+        { status: 400 }
+      );
     }
 
-    await query(queryStr, params);
+    const db = getDbPool();
+    await db.execute(sql, params);
 
     return NextResponse.json({ success: true, message: "Status updated successfully" });
   } catch (error) {
     console.error("Failed to update order status:", error);
-    return NextResponse.json({ success: false, message: error.message }, { status: 500 });
+    return NextResponse.json(
+      { success: false, message: error.message },
+      { status: 500 }
+    );
   }
 }

@@ -88,9 +88,10 @@ export default function AdminOrderCard({ order, isSelected, onSelect }) {
             lineHeight: 1,
             fontVariantNumeric: "tabular-nums",
             color: isSelected ? "#fff" : "var(--admin-text)",
+            textAlign: "center",
           }}
         >
-          {order.table_number}
+          {order.table_number?.replace(/meja/i, '').trim()}
         </span>
       </div>
 

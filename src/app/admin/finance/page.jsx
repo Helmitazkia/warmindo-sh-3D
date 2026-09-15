@@ -207,23 +207,22 @@ export default function FinanceDashboard() {
       {/* FAB */}
       <button
         onClick={() => setIsModalOpen(true)}
+        className="mobile-fab"
         style={{
           position: "fixed",
-          bottom: 24,
-          right: "calc(50% - 304px)",
-          display: "flex",
-          alignItems: "center",
-          gap: 8,
-          padding: "14px 20px",
+          padding: "16px 24px",
           borderRadius: 999,
-          border: "none",
           background: "linear-gradient(135deg, #f97316, #ea580c)",
           color: "#fff",
           fontWeight: 800,
-          fontSize: "0.875rem",
+          fontSize: "1rem",
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+          border: "none",
+          boxShadow: "0 10px 25px rgba(249,115,22,0.4)",
           cursor: "pointer",
-          boxShadow: "0 8px 24px rgba(249,115,22,0.4)",
-          zIndex: 30,
+          zIndex: 40,
         }}
       >
         <Plus size={20} /> Input Pengeluaran
@@ -279,7 +278,7 @@ export default function FinanceDashboard() {
                 />
               </div>
 
-              <div style={{ display: "flex", gap: 10 }}>
+              <div className="mobile-safe-bottom" style={{ display: "flex", gap: 10 }}>
                 <button type="button" onClick={() => setIsModalOpen(false)} className="btn-ghost" style={{ flex: 1, justifyContent: "center", padding: "12px" }}>
                   Batal
                 </button>

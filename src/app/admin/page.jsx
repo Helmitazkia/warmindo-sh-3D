@@ -55,7 +55,7 @@ export default function AdminDashboard() {
   const filteredOrders = filterStatus === "ALL" ? orders : orders.filter((o) => o.order_status === filterStatus);
 
   const OrderDetailPanel = ({ order, onClose, isModal = false }) => (
-    <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+    <div style={{ display: "flex", flexDirection: "column", flex: 1, overflow: "hidden" }}>
       {/* Panel header – orange gradient */}
       <div
         style={{
@@ -75,7 +75,7 @@ export default function AdminDashboard() {
               <span style={{ fontSize: "0.75rem", opacity: 0.85 }}>#{order.order_code}</span>
             </div>
             <h2 style={{ fontSize: "2rem", fontWeight: 900, fontVariantNumeric: "tabular-nums", lineHeight: 1 }}>
-              MEJA {order.table_number}
+              {order.table_number}
             </h2>
             <p style={{ fontSize: "0.85rem", opacity: 0.9, marginTop: 2 }}>{order.customer_name}</p>
           </div>
@@ -212,6 +212,7 @@ export default function AdminDashboard() {
 
       {/* Total & Action Buttons */}
       <div
+        className="mobile-safe-bottom"
         style={{
           background: "var(--admin-header-bg)",
           borderTop: "1px solid var(--admin-border)",
@@ -366,27 +367,32 @@ export default function AdminDashboard() {
       {/* Detail Modal (Bottom Sheet) */}
       <AnimatePresence>
         {selectedOrder && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setSelectedOrder(null)}
-              style={{ position: "fixed", inset: 0, zIndex: 50, background: "rgba(0,0,0,0.5)", backdropFilter: "blur(4px)" }}
-            />
+          <div
+            style={{
+              position: "fixed",
+              top: 0,
+              left: 0,
+              right: 0,
+              height: "100dvh",
+              zIndex: 100,
+              background: "rgba(0,0,0,0.5)",
+              backdropFilter: "blur(4px)",
+              display: "flex",
+              alignItems: "flex-end",
+              justifyContent: "center",
+            }}
+            onClick={() => setSelectedOrder(null)}
+          >
             <motion.div
               initial={{ y: "100%" }}
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", bounce: 0, duration: 0.4 }}
+              onClick={(e) => e.stopPropagation()}
               style={{
-                position: "fixed",
-                inset: "0 0 0 0",
+                width: "100%",
                 maxWidth: 640,
-                margin: "0 auto",
-                top: "auto",
-                height: "88vh",
-                zIndex: 51,
+                maxHeight: "85dvh",
                 background: "var(--admin-bg)",
                 borderRadius: "24px 24px 0 0",
                 overflow: "hidden",
@@ -399,11 +405,11 @@ export default function AdminDashboard() {
               <div style={{ display: "flex", justifyContent: "center", padding: "12px 0 8px", flexShrink: 0, background: "var(--admin-bg)" }}>
                 <div style={{ width: 40, height: 4, borderRadius: 999, background: "var(--admin-border)" }} />
               </div>
-              <div style={{ flex: 1, overflow: "hidden" }}>
+              <div style={{ flex: 1, overflow: "hidden", display: "flex", flexDirection: "column" }}>
                 <OrderDetailPanel order={selectedOrder} onClose={() => setSelectedOrder(null)} isModal />
               </div>
             </motion.div>
-          </>
+          </div>
         )}
       </AnimatePresence>
     </div>
