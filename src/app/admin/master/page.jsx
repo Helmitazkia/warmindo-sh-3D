@@ -6,9 +6,29 @@ import { Loader2, Plus, Search, CheckSquare, Square, SlidersHorizontal } from "l
 
 export default function MasterDataDashboard() {
   const [menus, setMenus] = useState([]);
+  const [dbCategories, setDbCategories] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState("Semua");
+  const [toast, setToast] = useState(null);
+
+  const showToast = (message, type = "error") => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 4000);
+  };
+
+  // Modal states
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formData, setFormData] = useState({
+    name: "",
+    price: "",
+    description: "",
+    category_id: "",
+    is_recommended: 0,
+    imageFile: null,
+    imagePreview: null,
+  });
 
   const [kitchenStock, setKitchenStock] = useState([
     { name: "Telur Ayam", status: "Siap Saji (48)", available: true },
@@ -24,7 +44,13 @@ export default function MasterDataDashboard() {
     try {
       const res = await fetch("/api/admin/menus");
       const json = await res.json();
-      if (json.success) setMenus(json.data);
+      if (json.success) {
+        setMenus(json.data.menus);
+        setDbCategories(json.data.categories);
+        if (json.data.categories.length > 0) {
+          setFormData(prev => ({ ...prev, category_id: json.data.categories[0].id }));
+        }
+      }
     } catch (error) { console.error(error); }
     finally { setIsLoading(false); }
   };
@@ -41,11 +67,81 @@ export default function MasterDataDashboard() {
       const json = await res.json();
       if (json.success) {
         setMenus(menus.map((m) => m.id === id ? { ...m, is_available: is_available ? 1 : 0 } : m));
-      } else { alert("Gagal update menu"); }
-    } catch (error) { console.error(error); }
+        showToast("Status menu berhasil diperbarui", "success");
+      } else { showToast("Gagal update menu"); }
+    } catch (error) {
+      console.error(error);
+      showToast("Terjadi kesalahan jaringan");
+    }
   };
 
   const categories = ["Semua", ...new Set(menus.map((m) => m.categoryName))];
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setFormData(prev => ({
+        ...prev,
+        imageFile: file,
+        imagePreview: URL.createObjectURL(file)
+      }));
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    let uploadedImageUrl = null;
+
+    if (formData.imageFile) {
+      try {
+        const uploadForm = new FormData();
+        uploadForm.append("file", formData.imageFile);
+        const uploadRes = await fetch("/api/upload", { method: "POST", body: uploadForm });
+        const uploadJson = await uploadRes.json();
+        if (uploadJson.success) {
+          uploadedImageUrl = uploadJson.url;
+        } else {
+          showToast("Gagal upload gambar: " + uploadJson.message);
+          setIsSubmitting(false);
+          return;
+        }
+      } catch (err) {
+        showToast("Terjadi kesalahan saat upload gambar");
+        setIsSubmitting(false);
+        return;
+      }
+    }
+
+    try {
+      const res = await fetch("/api/admin/menus", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: formData.name,
+          category_id: formData.category_id,
+          price: formData.price,
+          description: formData.description,
+          is_recommended: formData.is_recommended,
+          image_url: uploadedImageUrl,
+        }),
+      });
+      const json = await res.json();
+      if (json.success) {
+        setIsModalOpen(false);
+        setFormData({ name: "", price: "", description: "", category_id: dbCategories[0]?.id || "", is_recommended: 0, imageFile: null, imagePreview: null });
+        showToast("Berhasil menambah menu baru!", "success");
+        fetchMenus();
+      } else {
+        showToast("Gagal menambah menu: " + json.message);
+      }
+    } catch (err) {
+      console.error(err);
+      showToast("Terjadi kesalahan server");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const filteredMenus = menus.filter((m) => {
     const matchCat = activeCategory === "Semua" || m.categoryName === activeCategory;
@@ -57,6 +153,40 @@ export default function MasterDataDashboard() {
 
   return (
     <div>
+      {/* Toast Notification */}
+      {toast && (
+        <div style={{
+          position: "fixed",
+          top: 32,
+          left: "50%",
+          transform: "translateX(-50%)",
+          zIndex: 9999,
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+          padding: "16px 20px",
+          borderRadius: 8,
+          background: toast.type === "success" ? "#ecfdf5" : "#fef2f2",
+          border: `1px solid ${toast.type === "success" ? "#34d399" : "#fca5a5"}`,
+          boxShadow: "0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05)",
+          color: toast.type === "success" ? "#065f46" : "#991b1b",
+          minWidth: 320,
+        }}>
+          {toast.type === "success" ? (
+            <CheckSquare size={20} style={{ color: "#10b981", flexShrink: 0 }} />
+          ) : (
+            <div style={{ flexShrink: 0, width: 20, height: 20, borderRadius: "50%", background: "#ef4444", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "12px", fontWeight: "bold" }}>!</div>
+          )}
+          <div style={{ flex: 1 }}>
+            <p style={{ margin: 0, fontSize: "0.85rem", fontWeight: 600 }}>
+              {toast.type === "success" ? "Berhasil" : "Terjadi Kesalahan"}
+            </p>
+            <p style={{ margin: 0, fontSize: "0.8rem", opacity: 0.9 }}>{toast.message}</p>
+          </div>
+          <button onClick={() => setToast(null)} style={{ background: "none", border: "none", cursor: "pointer", opacity: 0.6 }}>✕</button>
+        </div>
+      )}
+
       {/* Summary Banner */}
       <div
         style={{
@@ -70,7 +200,7 @@ export default function MasterDataDashboard() {
         <p style={{ fontSize: "0.75rem", fontWeight: 600, opacity: 0.85, marginBottom: 4 }}>
           Total Nilai Produk Aktif
         </p>
-        <p style={{ fontSize: "1.8rem", fontWeight: 900, fontVariantNumeric: "tabular-nums", marginBottom: 12 }}>
+        <p suppressHydrationWarning style={{ fontSize: "1.8rem", fontWeight: 900, fontVariantNumeric: "tabular-nums", marginBottom: 12 }}>
           Rp {menus.filter((m) => m.is_available).reduce((a, m) => a + Number(m.price), 0).toLocaleString("id-ID")}
         </p>
         <div style={{ display: "flex", gap: 8 }}>
@@ -231,30 +361,108 @@ export default function MasterDataDashboard() {
 
       {/* FAB Tambah Menu */}
       <button
+        onClick={() => setIsModalOpen(true)}
+        className="mobile-fab"
         style={{
           position: "fixed",
-          bottom: 24,
-          right: "calc(50% - 304px)",
-          display: "flex",
-          alignItems: "center",
-          gap: 8,
-          padding: "14px 20px",
+          padding: "16px 24px",
           borderRadius: 999,
           border: "none",
           background: "linear-gradient(135deg, #f97316, #ea580c)",
           color: "#fff",
           fontWeight: 800,
-          fontSize: "0.875rem",
+          fontSize: "1rem",
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
           cursor: "pointer",
-          boxShadow: "0 8px 24px rgba(249,115,22,0.4)",
-          zIndex: 30,
-          transition: "transform 0.15s",
+          boxShadow: "0 10px 25px rgba(249,115,22,0.4)",
+          zIndex: 40,
         }}
-        onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.05)")}
-        onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
       >
         <Plus size={20} /> Tambah Menu
       </button>
+
+      {/* Modal Tambah Menu */}
+      {isModalOpen && (
+        <div
+          style={{ position: "fixed", inset: 0, zIndex: 60, display: "flex", alignItems: "flex-end", justifyContent: "center", background: "rgba(0,0,0,0.55)", backdropFilter: "blur(4px)" }}
+          onClick={() => setIsModalOpen(false)}
+        >
+          <div
+            style={{ width: "100%", maxWidth: 640, maxHeight: "90dvh", background: "var(--admin-header-bg)", border: "1px solid var(--admin-border)", borderRadius: "24px 24px 0 0", overflow: "hidden", boxShadow: "0 -20px 60px rgba(0,0,0,0.4)", display: "flex", flexDirection: "column" }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal header */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", background: "linear-gradient(135deg, #f97316, #ea580c)", flexShrink: 0 }}>
+              <h3 style={{ fontWeight: 800, fontSize: "1.05rem", color: "#fff" }}>Tambah Menu Baru</h3>
+              <button onClick={() => setIsModalOpen(false)} style={{ width: 32, height: 32, borderRadius: "50%", background: "rgba(255,255,255,0.2)", border: "none", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+                <Plus size={16} style={{ transform: "rotate(45deg)" }} />
+              </button>
+            </div>
+
+            <div style={{ flex: 1, overflowY: "auto", padding: 20 }}>
+              <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                <div>
+                  <label style={{ display: "block", fontSize: "0.8rem", fontWeight: 700, color: "var(--admin-text-muted)", marginBottom: 6 }}>Nama Menu *</label>
+                  <input type="text" required value={formData.name} onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))} style={{ width: "100%", background: "var(--admin-input-bg)", border: "1px solid var(--admin-border)", borderRadius: 12, padding: "12px", fontSize: "0.9rem", color: "var(--admin-text)", outline: "none" }} />
+                </div>
+
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                  <div>
+                    <label style={{ display: "block", fontSize: "0.8rem", fontWeight: 700, color: "var(--admin-text-muted)", marginBottom: 6 }}>Kategori *</label>
+                    <select required value={formData.category_id} onChange={(e) => setFormData(prev => ({ ...prev, category_id: e.target.value }))} style={{ width: "100%", background: "var(--admin-input-bg)", border: "1px solid var(--admin-border)", borderRadius: 12, padding: "12px", fontSize: "0.9rem", color: "var(--admin-text)", outline: "none" }}>
+                      {dbCategories.map(cat => <option key={cat.id} value={cat.id}>{cat.name}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label style={{ display: "block", fontSize: "0.8rem", fontWeight: 700, color: "var(--admin-text-muted)", marginBottom: 6 }}>Harga (Rp) *</label>
+                    <input type="number" required value={formData.price} onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))} style={{ width: "100%", background: "var(--admin-input-bg)", border: "1px solid var(--admin-border)", borderRadius: 12, padding: "12px", fontSize: "0.9rem", color: "var(--admin-text)", outline: "none" }} />
+                  </div>
+                </div>
+
+                <div>
+                  <label style={{ display: "block", fontSize: "0.8rem", fontWeight: 700, color: "var(--admin-text-muted)", marginBottom: 6 }}>Deskripsi</label>
+                  <textarea rows={3} value={formData.description} onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))} style={{ width: "100%", background: "var(--admin-input-bg)", border: "1px solid var(--admin-border)", borderRadius: 12, padding: "12px", fontSize: "0.9rem", color: "var(--admin-text)", outline: "none", resize: "vertical" }} />
+                </div>
+
+                <div>
+                  <label style={{ display: "block", fontSize: "0.8rem", fontWeight: 700, color: "var(--admin-text-muted)", marginBottom: 6 }}>Gambar Menu</label>
+                  <input type="file" accept="image/*" onChange={handleFileChange} style={{ width: "100%", background: "var(--admin-input-bg)", border: "1px dashed var(--admin-border)", borderRadius: 12, padding: "12px", fontSize: "0.85rem", color: "var(--admin-text-muted)", outline: "none" }} />
+                  {formData.imagePreview && (
+                    <div style={{ marginTop: 10 }}>
+                      <img src={formData.imagePreview} alt="Preview" style={{ height: 100, borderRadius: 8, objectFit: "cover" }} />
+                    </div>
+                  )}
+                </div>
+
+                <div>
+                  <label style={{ display: "block", fontSize: "0.8rem", fontWeight: 700, color: "var(--admin-text-muted)", marginBottom: 6 }}>Menu Favorit? (is_recommended)</label>
+                  <div style={{ display: "flex", gap: 10 }}>
+                    <label style={{ flex: 1, display: "flex", alignItems: "center", gap: 8, padding: "12px", borderRadius: 12, border: formData.is_recommended === 1 ? "1px solid #f97316" : "1px solid var(--admin-border)", background: formData.is_recommended === 1 ? "rgba(249,115,22,0.1)" : "var(--admin-input-bg)", cursor: "pointer" }}>
+                      <input type="radio" name="is_recommended" checked={formData.is_recommended === 1} onChange={() => setFormData(prev => ({ ...prev, is_recommended: 1 }))} style={{ accentColor: "#f97316" }} />
+                      <span style={{ fontSize: "0.85rem", color: "var(--admin-text)", fontWeight: 600 }}>🌟 Ya, Favorit</span>
+                    </label>
+                    <label style={{ flex: 1, display: "flex", alignItems: "center", gap: 8, padding: "12px", borderRadius: 12, border: formData.is_recommended === 0 ? "1px solid var(--admin-border)" : "1px solid var(--admin-border)", background: formData.is_recommended === 0 ? "var(--admin-surface-2)" : "var(--admin-input-bg)", cursor: "pointer" }}>
+                      <input type="radio" name="is_recommended" checked={formData.is_recommended === 0} onChange={() => setFormData(prev => ({ ...prev, is_recommended: 0 }))} style={{ accentColor: "#f97316" }} />
+                      <span style={{ fontSize: "0.85rem", color: "var(--admin-text)", fontWeight: 600 }}>Biasa</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div className="mobile-safe-bottom" style={{ display: "flex", gap: 10, marginTop: 10 }}>
+                  <button type="button" onClick={() => setIsModalOpen(false)} style={{ flex: 1, padding: "14px", borderRadius: 12, border: "1px solid var(--admin-border)", background: "var(--admin-surface-2)", color: "var(--admin-text-muted)", fontWeight: 700, cursor: "pointer" }}>
+                    Batal
+                  </button>
+                  <button type="submit" disabled={isSubmitting} style={{ flex: 1, padding: "14px", borderRadius: 12, border: "none", background: "linear-gradient(135deg, #10b981, #059669)", color: "#fff", fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, cursor: "pointer" }}>
+                    {isSubmitting ? <Loader2 className="animate-spin" size={18} /> : "Simpan Menu"}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
