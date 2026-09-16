@@ -56,22 +56,22 @@ export default function AdminHeader() {
           style={{
             maxWidth: 640,
             margin: "0 auto",
-            padding: "12px 16px",
+            padding: "10px 14px",
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            gap: 12,
+            gap: 10,
           }}
         >
           {/* Left: Hamburger + Logo + Title */}
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
             <button
               onClick={() => setDrawerOpen(true)}
               aria-label="Buka menu navigasi"
               style={{
-                width: 40,
-                height: 40,
-                borderRadius: 12,
+                width: 36,
+                height: 36,
+                borderRadius: 10,
                 border: "1px solid var(--admin-border)",
                 background: "var(--admin-surface)",
                 color: "var(--admin-text)",
@@ -83,30 +83,30 @@ export default function AdminHeader() {
                 flexShrink: 0,
               }}
             >
-              <Menu size={20} />
+              <Menu size={18} />
             </button>
 
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
               <div
                 style={{
-                  width: 36,
-                  height: 36,
-                  borderRadius: 10,
+                  width: 32,
+                  height: 32,
+                  borderRadius: 9,
                   background: "linear-gradient(135deg, #f97316, #ea580c)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                   flexShrink: 0,
-                  boxShadow: "0 4px 12px rgba(249,115,22,0.35)",
+                  boxShadow: "0 4px 10px rgba(249,115,22,0.35)",
                 }}
               >
-                <ChefHat size={18} color="#fff" />
+                <ChefHat size={16} color="#fff" />
               </div>
-              <div>
-                <div style={{ fontWeight: 800, fontSize: "0.95rem", color: "var(--admin-text)", lineHeight: 1.2 }}>
+              <div style={{ minWidth: 0 }}>
+                <div style={{ fontWeight: 800, fontSize: "0.9rem", color: "var(--admin-text)", lineHeight: 1.2, whiteSpace: "nowrap" }}>
                   {pageTitle}
                 </div>
-                <div style={{ fontSize: "0.7rem", color: "var(--admin-text-muted)", lineHeight: 1 }}>
+                <div style={{ fontSize: "0.66rem", color: "var(--admin-text-muted)", lineHeight: 1, whiteSpace: "nowrap" }}>
                   Warmindo SH • Admin
                 </div>
               </div>
@@ -114,14 +114,14 @@ export default function AdminHeader() {
           </div>
 
           {/* Right: Theme Toggle + Bell */}
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
             <button
               onClick={toggleTheme}
               title={theme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"}
               style={{
-                width: 40,
-                height: 40,
-                borderRadius: 12,
+                width: 36,
+                height: 36,
+                borderRadius: 10,
                 border: "1px solid var(--admin-border)",
                 background: "var(--admin-surface)",
                 color: "var(--admin-text-muted)",
@@ -130,16 +130,17 @@ export default function AdminHeader() {
                 justifyContent: "center",
                 cursor: "pointer",
                 transition: "all 0.2s",
+                flexShrink: 0,
               }}
             >
-              {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
+              {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
             </button>
 
             <button
               style={{
-                width: 40,
-                height: 40,
-                borderRadius: 12,
+                width: 36,
+                height: 36,
+                borderRadius: 10,
                 border: "1px solid var(--admin-border)",
                 background: "var(--admin-surface)",
                 color: "var(--admin-text-muted)",

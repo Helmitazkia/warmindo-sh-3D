@@ -37,8 +37,8 @@ export default function OrderItemCard({
         transition={{ duration: 0.3 }}
         style={{
           display: "flex",
-          gap: 14,
-          padding: "16px",
+          gap: 12,
+          padding: "12px 14px",
           background: "var(--bg-card)",
           border: cartQty > 0 ? "1px solid rgba(249,115,22,0.4)" : "1px solid var(--border-glass)",
           borderRadius: 18,
@@ -52,10 +52,10 @@ export default function OrderItemCard({
         <div
           style={{
             position: "relative",
-            width: 100,
-            height: 100,
+            width: 86,
+            height: 86,
             flexShrink: 0,
-            borderRadius: 14,
+            borderRadius: 12,
             background: "rgba(255,255,255,0.03)",
             display: "flex",
             alignItems: "center",
@@ -66,8 +66,8 @@ export default function OrderItemCard({
           <Image
             src={item.image}
             alt={item.name}
-            width={100}
-            height={100}
+            width={86}
+            height={86}
             style={{
               width: "90%",
               height: "90%",
@@ -118,7 +118,7 @@ export default function OrderItemCard({
                 style={{
                   fontFamily: "var(--font-poppins), sans-serif",
                   fontWeight: 700,
-                  fontSize: "0.95rem",
+                  fontSize: "0.9rem",
                   color: "var(--text-primary)",
                   lineHeight: 1.25,
                 }}
@@ -129,10 +129,10 @@ export default function OrderItemCard({
 
             <p
               style={{
-                fontSize: "0.78rem",
+                fontSize: "0.75rem",
                 color: "var(--text-muted)",
-                lineHeight: 1.4,
-                marginBottom: 8,
+                lineHeight: 1.35,
+                marginBottom: 6,
                 display: "-webkit-box",
                 WebkitLineClamp: 2,
                 WebkitBoxOrient: "vertical",
@@ -147,7 +147,7 @@ export default function OrderItemCard({
               <div
                 onClick={() => setShowNoteModal(true)}
                 style={{
-                  fontSize: "0.72rem",
+                  fontSize: "0.7rem",
                   color: "#fbbf24",
                   background: "rgba(251,191,36,0.1)",
                   padding: "3px 8px",
@@ -155,7 +155,7 @@ export default function OrderItemCard({
                   display: "inline-flex",
                   alignItems: "center",
                   gap: 4,
-                  marginBottom: 8,
+                  marginBottom: 6,
                   cursor: "pointer",
                 }}
               >
@@ -170,18 +170,20 @@ export default function OrderItemCard({
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
+              gap: 8,
               marginTop: 4,
             }}
           >
             <span
               style={{
                 fontWeight: 800,
-                fontSize: "0.95rem",
+                fontSize: "0.92rem",
                 background: "linear-gradient(135deg, #fbbf24, #f97316)",
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
                 backgroundClip: "text",
                 fontFamily: "var(--font-poppins), sans-serif",
+                whiteSpace: "nowrap",
               }}
             >
               {formatIDR(item.price)}
@@ -206,6 +208,7 @@ export default function OrderItemCard({
                     justifyContent: "center",
                     fontSize: "0.75rem",
                     cursor: "pointer",
+                    flexShrink: 0,
                   }}
                 >
                   📝
@@ -218,31 +221,33 @@ export default function OrderItemCard({
                     background: "rgba(249,115,22,0.12)",
                     border: "1px solid rgba(249,115,22,0.35)",
                     borderRadius: 999,
-                    padding: "3px 4px",
+                    padding: "3px 5px",
+                    gap: 2,
                   }}
                 >
                   <button
                     onClick={() => onRemoveFromCart(item)}
                     style={{
-                      width: 26,
-                      height: 26,
+                      width: 28,
+                      height: 28,
                       borderRadius: "50%",
                       border: "none",
-                      background: "rgba(255,255,255,0.1)",
+                      background: "rgba(255,255,255,0.12)",
                       color: "var(--text-primary)",
                       fontWeight: 800,
-                      fontSize: "0.9rem",
+                      fontSize: "0.95rem",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
                       cursor: "pointer",
+                      flexShrink: 0,
                     }}
                   >
                     -
                   </button>
                   <span
                     style={{
-                      width: 28,
+                      width: 24,
                       textAlign: "center",
                       fontWeight: 800,
                       fontSize: "0.88rem",
@@ -254,19 +259,20 @@ export default function OrderItemCard({
                   <button
                     onClick={() => onAddToCart(item)}
                     style={{
-                      width: 26,
-                      height: 26,
+                      width: 28,
+                      height: 28,
                       borderRadius: "50%",
                       border: "none",
                       background: "linear-gradient(135deg, #f97316, #ea580c)",
                       color: "#fff",
                       fontWeight: 800,
-                      fontSize: "0.9rem",
+                      fontSize: "0.95rem",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
                       cursor: "pointer",
                       boxShadow: "0 2px 8px rgba(249,115,22,0.4)",
+                      flexShrink: 0,
                     }}
                   >
                     +
@@ -291,6 +297,8 @@ export default function OrderItemCard({
                   boxShadow: "0 4px 14px rgba(249,115,22,0.3)",
                   transition: "transform 0.15s",
                   fontFamily: "var(--font-poppins), sans-serif",
+                  whiteSpace: "nowrap",
+                  flexShrink: 0,
                 }}
               >
                 <span>+ Tambah</span>

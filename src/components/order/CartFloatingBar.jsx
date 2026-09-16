@@ -46,19 +46,20 @@ export default function CartFloatingBar({ totalItems, totalPrice, onOpenCart }) 
             }}
           >
             {/* Left: Cart Icon & Item Count */}
-            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
               <div
                 style={{
                   position: "relative",
-                  width: 44,
-                  height: 44,
-                  borderRadius: 14,
+                  width: 40,
+                  height: 40,
+                  flexShrink: 0,
+                  borderRadius: 12,
                   background: "linear-gradient(135deg, #f97316, #ea580c)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  fontSize: 20,
-                  boxShadow: "0 4px 16px rgba(249,115,22,0.4)",
+                  fontSize: 18,
+                  boxShadow: "0 4px 14px rgba(249,115,22,0.4)",
                 }}
               >
                 🛒
@@ -70,9 +71,9 @@ export default function CartFloatingBar({ totalItems, totalPrice, onOpenCart }) 
                     background: "#fbbf24",
                     color: "#000",
                     fontWeight: 900,
-                    fontSize: "0.7rem",
-                    width: 20,
-                    height: 20,
+                    fontSize: "0.68rem",
+                    width: 18,
+                    height: 18,
                     borderRadius: "50%",
                     display: "flex",
                     alignItems: "center",
@@ -84,16 +85,17 @@ export default function CartFloatingBar({ totalItems, totalPrice, onOpenCart }) 
                 </span>
               </div>
 
-              <div>
-                <div style={{ fontSize: "0.75rem", color: "#9ca3af", lineHeight: 1.1 }}>
+              <div style={{ minWidth: 0 }}>
+                <div style={{ fontSize: "0.7rem", color: "#9ca3af", lineHeight: 1.1, whiteSpace: "nowrap" }}>
                   Total Pesanan
                 </div>
                 <div
                   style={{
                     fontWeight: 800,
-                    fontSize: "1.1rem",
+                    fontSize: "1rem",
                     color: "#ffffff",
                     fontFamily: "var(--font-poppins), sans-serif",
+                    whiteSpace: "nowrap",
                   }}
                 >
                   {formatIDR(totalPrice)}
@@ -106,19 +108,21 @@ export default function CartFloatingBar({ totalItems, totalPrice, onOpenCart }) 
               style={{
                 display: "inline-flex",
                 alignItems: "center",
-                gap: 8,
-                padding: "10px 20px",
+                gap: 6,
+                padding: "8px 16px",
                 background: "linear-gradient(135deg, #f97316, #ea580c)",
                 borderRadius: 999,
                 color: "#ffffff",
                 fontWeight: 800,
-                fontSize: "0.85rem",
+                fontSize: "0.8rem",
                 boxShadow: "0 4px 16px rgba(249,115,22,0.35)",
                 fontFamily: "var(--font-poppins), sans-serif",
+                whiteSpace: "nowrap",
+                flexShrink: 0,
               }}
             >
               <span>Lihat Pesanan</span>
-              <span>→</span>
+              <span style={{ fontSize: "0.9rem" }}>→</span>
             </div>
           </div>
         </motion.div>
