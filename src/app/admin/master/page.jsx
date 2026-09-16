@@ -19,6 +19,7 @@ export default function MasterDataDashboard() {
 
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingMenuId, setEditingMenuId] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -48,7 +49,7 @@ export default function MasterDataDashboard() {
         setMenus(json.data.menus);
         setDbCategories(json.data.categories);
         if (json.data.categories.length > 0) {
-          setFormData(prev => ({ ...prev, category_id: json.data.categories[0].id }));
+          setFormData(prev => ({ ...prev, category_id: prev.category_id || json.data.categories[0].id }));
         }
       }
     } catch (error) { console.error(error); }
@@ -56,6 +57,34 @@ export default function MasterDataDashboard() {
   };
 
   useEffect(() => { fetchMenus(); }, []);
+
+  const handleOpenAdd = () => {
+    setEditingMenuId(null);
+    setFormData({
+      name: "",
+      price: "",
+      description: "",
+      category_id: dbCategories[0]?.id || "",
+      is_recommended: 0,
+      imageFile: null,
+      imagePreview: null,
+    });
+    setIsModalOpen(true);
+  };
+
+  const handleOpenEdit = (menu) => {
+    setEditingMenuId(menu.id);
+    setFormData({
+      name: menu.name || "",
+      price: menu.price || "",
+      description: menu.description || "",
+      category_id: menu.category_id || dbCategories[0]?.id || "",
+      is_recommended: menu.is_recommended ? 1 : 0,
+      imageFile: null,
+      imagePreview: menu.image_url || null,
+    });
+    setIsModalOpen(true);
+  };
 
   const handleToggleAvailable = async (id, is_available) => {
     try {
@@ -91,7 +120,7 @@ export default function MasterDataDashboard() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-    let uploadedImageUrl = null;
+    let finalImageUrl = formData.imagePreview;
 
     if (formData.imageFile) {
       try {
@@ -100,7 +129,7 @@ export default function MasterDataDashboard() {
         const uploadRes = await fetch("/api/upload", { method: "POST", body: uploadForm });
         const uploadJson = await uploadRes.json();
         if (uploadJson.success) {
-          uploadedImageUrl = uploadJson.url;
+          finalImageUrl = uploadJson.url;
         } else {
           showToast("Gagal upload gambar: " + uploadJson.message);
           setIsSubmitting(false);
@@ -114,26 +143,33 @@ export default function MasterDataDashboard() {
     }
 
     try {
-      const res = await fetch("/api/admin/menus", {
-        method: "POST",
+      const isEdit = !!editingMenuId;
+      const url = "/api/admin/menus";
+      const method = isEdit ? "PUT" : "POST";
+      const payload = {
+        ...(isEdit ? { id: editingMenuId } : {}),
+        name: formData.name,
+        category_id: formData.category_id,
+        price: formData.price,
+        description: formData.description,
+        is_recommended: formData.is_recommended,
+        image_url: finalImageUrl,
+      };
+
+      const res = await fetch(url, {
+        method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: formData.name,
-          category_id: formData.category_id,
-          price: formData.price,
-          description: formData.description,
-          is_recommended: formData.is_recommended,
-          image_url: uploadedImageUrl,
-        }),
+        body: JSON.stringify(payload),
       });
       const json = await res.json();
       if (json.success) {
         setIsModalOpen(false);
+        setEditingMenuId(null);
         setFormData({ name: "", price: "", description: "", category_id: dbCategories[0]?.id || "", is_recommended: 0, imageFile: null, imagePreview: null });
-        showToast("Berhasil menambah menu baru!", "success");
+        showToast(isEdit ? "Data menu berhasil diperbarui!" : "Berhasil menambah menu baru!", "success");
         fetchMenus();
       } else {
-        showToast("Gagal menambah menu: " + json.message);
+        showToast("Gagal menyimpan menu: " + json.message);
       }
     } catch (err) {
       console.error(err);
@@ -353,7 +389,12 @@ export default function MasterDataDashboard() {
             </div>
           ) : (
             filteredMenus.map((menu) => (
-              <MasterMenuCard key={menu.id} menu={menu} onToggleAvailable={handleToggleAvailable} />
+              <MasterMenuCard
+                key={menu.id}
+                menu={menu}
+                onToggleAvailable={handleToggleAvailable}
+                onEdit={handleOpenEdit}
+              />
             ))
           )}
         </div>
@@ -361,7 +402,7 @@ export default function MasterDataDashboard() {
 
       {/* FAB Tambah Menu */}
       <button
-        onClick={() => setIsModalOpen(true)}
+        onClick={handleOpenAdd}
         className="mobile-fab"
         style={{
           position: "fixed",
@@ -383,7 +424,7 @@ export default function MasterDataDashboard() {
         <Plus size={20} /> Tambah Menu
       </button>
 
-      {/* Modal Tambah Menu */}
+      {/* Modal Tambah / Edit Menu */}
       {isModalOpen && (
         <div
           style={{ position: "fixed", inset: 0, zIndex: 60, display: "flex", alignItems: "flex-end", justifyContent: "center", background: "rgba(0,0,0,0.55)", backdropFilter: "blur(4px)" }}
@@ -395,7 +436,9 @@ export default function MasterDataDashboard() {
           >
             {/* Modal header */}
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", background: "linear-gradient(135deg, #f97316, #ea580c)", flexShrink: 0 }}>
-              <h3 style={{ fontWeight: 800, fontSize: "1.05rem", color: "#fff" }}>Tambah Menu Baru</h3>
+              <h3 style={{ fontWeight: 800, fontSize: "1.05rem", color: "#fff" }}>
+                {editingMenuId ? "✏️ Ubah Data Menu" : "🍜 Tambah Menu Baru"}
+              </h3>
               <button onClick={() => setIsModalOpen(false)} style={{ width: 32, height: 32, borderRadius: "50%", background: "rgba(255,255,255,0.2)", border: "none", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
                 <Plus size={16} style={{ transform: "rotate(45deg)" }} />
               </button>
@@ -430,8 +473,11 @@ export default function MasterDataDashboard() {
                   <label style={{ display: "block", fontSize: "0.8rem", fontWeight: 700, color: "var(--admin-text-muted)", marginBottom: 6 }}>Gambar Menu</label>
                   <input type="file" accept="image/*" onChange={handleFileChange} style={{ width: "100%", background: "var(--admin-input-bg)", border: "1px dashed var(--admin-border)", borderRadius: 12, padding: "12px", fontSize: "0.85rem", color: "var(--admin-text-muted)", outline: "none" }} />
                   {formData.imagePreview && (
-                    <div style={{ marginTop: 10 }}>
-                      <img src={formData.imagePreview} alt="Preview" style={{ height: 100, borderRadius: 8, objectFit: "cover" }} />
+                    <div style={{ marginTop: 10, display: "flex", alignItems: "center", gap: 12 }}>
+                      <img src={formData.imagePreview} alt="Preview" style={{ height: 80, width: 80, borderRadius: 10, objectFit: "cover", border: "1px solid var(--admin-border)" }} />
+                      <span style={{ fontSize: "0.75rem", color: "var(--admin-text-muted)" }}>
+                        {formData.imageFile ? "Gambar baru siap diunggah" : "Gambar saat ini"}
+                      </span>
                     </div>
                   )}
                 </div>
@@ -455,7 +501,7 @@ export default function MasterDataDashboard() {
                     Batal
                   </button>
                   <button type="submit" disabled={isSubmitting} style={{ flex: 1, padding: "14px", borderRadius: 12, border: "none", background: "linear-gradient(135deg, #10b981, #059669)", color: "#fff", fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, cursor: "pointer" }}>
-                    {isSubmitting ? <Loader2 className="animate-spin" size={18} /> : "Simpan Menu"}
+                    {isSubmitting ? <Loader2 className="animate-spin" size={18} /> : (editingMenuId ? "Simpan Perubahan" : "Simpan Menu")}
                   </button>
                 </div>
               </form>
