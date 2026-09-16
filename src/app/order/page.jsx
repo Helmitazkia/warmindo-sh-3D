@@ -210,7 +210,7 @@ function OrderPageContent() {
                   </div>
                 </div>
               </div>
-              <span
+              {/* <span
                 style={{
                   fontSize: "0.72rem",
                   fontWeight: 700,
@@ -221,7 +221,7 @@ function OrderPageContent() {
                 }}
               >
                 ● DB Aktif
-              </span>
+              </span> */}
             </div>
 
             {/* Menu List */}

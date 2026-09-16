@@ -72,75 +72,73 @@ export default function OrderHeader({
             }}
           >
             {/* Logo */}
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <Link href="/" style={{ textDecoration: "none" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
+              <Link href="/" style={{ textDecoration: "none", flexShrink: 0 }}>
                 <div
                   style={{
-                    width: 36,
-                    height: 36,
-                    borderRadius: 10,
+                    width: 32,
+                    height: 32,
+                    borderRadius: 9,
                     background: "linear-gradient(135deg, #f97316, #dc2626)",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    fontSize: 18,
-                    boxShadow: "0 4px 12px rgba(249,115,22,0.4)",
+                    fontSize: 16,
+                    boxShadow: "0 4px 10px rgba(249,115,22,0.35)",
                   }}
                 >
                   🍜
                 </div>
               </Link>
-              <div>
+              <div style={{ minWidth: 0 }}>
                 <h1
                   style={{
                     fontFamily: "var(--font-poppins), sans-serif",
                     fontWeight: 800,
-                    fontSize: "1.05rem",
-                    lineHeight: 1.1,
+                    fontSize: "0.92rem",
+                    lineHeight: 1.15,
                     color: "var(--text-primary)",
+                    whiteSpace: "nowrap",
                   }}
                 >
                   Warmindo SH
                 </h1>
-                <span style={{ fontSize: "0.72rem", color: "var(--text-muted)" }}>
+                <span style={{ fontSize: "0.66rem", color: "var(--text-muted)", whiteSpace: "nowrap", display: "block" }}>
                   Self-Order Dine In
                 </span>
               </div>
             </div>
 
             {/* Right Action: Table Badge + Theme Toggle */}
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
               {/* Table Badge Selector */}
               <button
                 onClick={() => setShowTableModal(true)}
                 style={{
                   display: "inline-flex",
                   alignItems: "center",
-                  gap: 6,
-                  padding: "6px 12px",
+                  gap: 5,
+                  padding: "5px 10px",
                   background: "rgba(249,115,22,0.15)",
                   border: "1px solid rgba(249,115,22,0.35)",
                   borderRadius: 999,
                   color: "#f97316",
                   fontWeight: 700,
-                  fontSize: "0.82rem",
+                  fontSize: "0.78rem",
                   cursor: "pointer",
                   transition: "all 0.2s",
                   fontFamily: "var(--font-poppins), sans-serif",
+                  whiteSpace: "nowrap",
+                  flexShrink: 0,
                 }}
               >
-                <span>🪑</span>
-                {/* <span>
-                  {tableNumber
-                    ? `Meja ${tableNumber}${currentTable ? ` (Sisa ${currentTable.formattedRemaining || currentTable.remaining})` : ""}`
-                    : "Pilih Meja"}
-                </span> */}
+                <span style={{ fontSize: "0.85rem" }}>🪑</span>
                 <span>
                   {tableNumber
                     ? `Meja ${tableNumber}`
                     : "Pilih Meja"}
                 </span>
-                <span style={{ fontSize: "0.7rem", opacity: 0.8 }}>▼</span>
+                <span style={{ fontSize: "0.65rem", opacity: 0.8 }}>▼</span>
               </button>
 
               {/* Dark / Light Mode Toggle Button */}
@@ -149,18 +147,19 @@ export default function OrderHeader({
                 title={theme === "dark" ? "Mode Terang" : "Mode Gelap"}
                 aria-label="Toggle theme"
                 style={{
-                  width: 36,
-                  height: 36,
-                  borderRadius: 10,
+                  width: 32,
+                  height: 32,
+                  borderRadius: 9,
                   border: "1px solid var(--border-glass)",
                   background: "var(--theme-toggle-bg)",
                   cursor: "pointer",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  fontSize: "1.05rem",
+                  fontSize: "0.95rem",
                   color: "var(--text-primary)",
                   transition: "transform 0.15s",
+                  flexShrink: 0,
                 }}
               >
                 {theme === "dark" ? "☀️" : "🌙"}

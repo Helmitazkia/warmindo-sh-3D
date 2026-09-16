@@ -22,11 +22,11 @@ export default function AdminOrderCard({ order, isSelected, onSelect }) {
       style={{
         display: "flex",
         alignItems: "center",
-        gap: 14,
-        padding: 16,
+        gap: 12,
+        padding: "12px 14px",
         background: isSelected ? "var(--admin-pill-bg)" : "var(--admin-card-bg)",
         border: `1px solid ${isSelected ? "var(--accent-orange)" : "var(--admin-card-border)"}`,
-        borderRadius: 18,
+        borderRadius: 16,
         boxShadow: isSelected
           ? "0 8px 24px rgba(249,115,22,0.12)"
           : "0 2px 12px rgba(0,0,0,0.06)",
@@ -47,7 +47,7 @@ export default function AdminOrderCard({ order, isSelected, onSelect }) {
             bottom: 0,
             width: 4,
             background: "linear-gradient(to bottom, #f97316, #fbbf24)",
-            borderRadius: "18px 0 0 18px",
+            borderRadius: "16px 0 0 16px",
           }}
         />
       )}
@@ -55,9 +55,9 @@ export default function AdminOrderCard({ order, isSelected, onSelect }) {
       {/* Table Number Badge */}
       <div
         style={{
-          width: 56,
-          height: 56,
-          borderRadius: 16,
+          width: 48,
+          height: 48,
+          borderRadius: 14,
           flexShrink: 0,
           display: "flex",
           flexDirection: "column",
@@ -72,18 +72,18 @@ export default function AdminOrderCard({ order, isSelected, onSelect }) {
       >
         <span
           style={{
-            fontSize: "0.6rem",
+            fontSize: "0.58rem",
             fontWeight: 800,
             textTransform: "uppercase",
             color: isSelected ? "rgba(255,255,255,0.8)" : "var(--admin-text-muted)",
-            letterSpacing: "0.05em",
+            letterSpacing: "0.04em",
           }}
         >
           Meja
         </span>
         <span
           style={{
-            fontSize: "1.4rem",
+            fontSize: "1.2rem",
             fontWeight: 900,
             lineHeight: 1,
             fontVariantNumeric: "tabular-nums",
@@ -97,32 +97,33 @@ export default function AdminOrderCard({ order, isSelected, onSelect }) {
 
       {/* Info */}
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 3 }}>
-          <p style={{ fontWeight: 700, fontSize: "0.95rem", color: "var(--admin-text)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 2 }}>
+          <p style={{ fontWeight: 700, fontSize: "0.9rem", color: "var(--admin-text)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
             {order.customer_name}
           </p>
         </div>
-        <p style={{ fontSize: "0.8rem", color: "var(--admin-text-muted)", marginBottom: 6, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+        <p style={{ fontSize: "0.75rem", color: "var(--admin-text-muted)", marginBottom: 4, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
           {order.items?.length ?? 0} item • Rp {Number(order.total_amount).toLocaleString("id-ID")}
         </p>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "nowrap" }}>
           <span
             style={{
               display: "inline-flex",
               alignItems: "center",
-              gap: 5,
-              fontSize: "0.68rem",
+              gap: 4,
+              fontSize: "0.65rem",
               fontWeight: 700,
-              padding: "3px 8px",
+              padding: "2px 7px",
               borderRadius: 999,
               background: status.bg,
               color: status.text,
+              whiteSpace: "nowrap",
             }}
           >
             <span style={{ width: 5, height: 5, borderRadius: "50%", background: status.dot, display: "inline-block" }} />
             {status.label}
           </span>
-          <span style={{ fontSize: "0.7rem", color: "var(--admin-text-sub)", display: "flex", alignItems: "center", gap: 3 }}>
+          <span style={{ fontSize: "0.68rem", color: "var(--admin-text-sub)", display: "flex", alignItems: "center", gap: 3, whiteSpace: "nowrap" }}>
             <Clock size={10} /> {timeString}
           </span>
         </div>
@@ -131,8 +132,8 @@ export default function AdminOrderCard({ order, isSelected, onSelect }) {
       {/* Arrow */}
       <div
         style={{
-          width: 32,
-          height: 32,
+          width: 28,
+          height: 28,
           borderRadius: "50%",
           flexShrink: 0,
           display: "flex",
@@ -143,7 +144,7 @@ export default function AdminOrderCard({ order, isSelected, onSelect }) {
           transition: "all 0.2s",
         }}
       >
-        <ChevronRight size={18} />
+        <ChevronRight size={16} />
       </div>
     </motion.div>
   );
