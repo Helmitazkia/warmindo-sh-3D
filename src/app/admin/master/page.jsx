@@ -126,7 +126,7 @@ export default function MasterDataDashboard() {
       try {
         const uploadForm = new FormData();
         uploadForm.append("file", formData.imageFile);
-        const uploadRes = await fetch("/api/upload", { method: "POST", body: uploadForm });
+        const uploadRes = await fetch("/api/upload/menu", { method: "POST", body: uploadForm });
         const uploadJson = await uploadRes.json();
         if (uploadJson.success) {
           finalImageUrl = uploadJson.url;
