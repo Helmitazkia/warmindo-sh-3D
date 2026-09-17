@@ -28,6 +28,7 @@ export default function MasterDataDashboard() {
     description: "",
     category_id: "",
     is_recommended: 0,
+    selectedToppingIds: [],
     imageFile: null,
     imagePreview: null,
   });
@@ -213,6 +214,7 @@ export default function MasterDataDashboard() {
       description: "",
       category_id: dbCategories[0]?.id || "",
       is_recommended: 0,
+      selectedToppingIds: [],
       imageFile: null,
       imagePreview: null,
     });
@@ -220,6 +222,12 @@ export default function MasterDataDashboard() {
   };
 
   const handleOpenEdit = (menu) => {
+    const initialToppingIds = menu.allow_toppings
+      ? String(menu.allow_toppings)
+          .split(",")
+          .map((id) => Number(id.trim()))
+          .filter(Boolean)
+      : [];
     setEditingMenuId(menu.id);
     setFormData({
       name: menu.name || "",
@@ -227,6 +235,7 @@ export default function MasterDataDashboard() {
       description: menu.description || "",
       category_id: menu.category_id || dbCategories[0]?.id || "",
       is_recommended: menu.is_recommended ? 1 : 0,
+      selectedToppingIds: initialToppingIds,
       imageFile: null,
       imagePreview: menu.image_url || null,
     });
@@ -300,6 +309,7 @@ export default function MasterDataDashboard() {
         price: formData.price,
         description: formData.description,
         is_recommended: formData.is_recommended,
+        allow_toppings: formData.selectedToppingIds && formData.selectedToppingIds.length > 0 ? formData.selectedToppingIds.join(",") : null,
         image_url: finalImageUrl,
       };
 
@@ -312,7 +322,7 @@ export default function MasterDataDashboard() {
       if (json.success) {
         setIsModalOpen(false);
         setEditingMenuId(null);
-        setFormData({ name: "", price: "", description: "", category_id: dbCategories[0]?.id || "", is_recommended: 0, imageFile: null, imagePreview: null });
+        setFormData({ name: "", price: "", description: "", category_id: dbCategories[0]?.id || "", is_recommended: 0, selectedToppingIds: [], imageFile: null, imagePreview: null });
         showToast(isEdit ? "Data menu berhasil diperbarui!" : "Berhasil menambah menu baru!", "success");
         fetchMenus();
       } else {
@@ -693,6 +703,73 @@ export default function MasterDataDashboard() {
                       <span style={{ fontSize: "0.85rem", color: "var(--admin-text)", fontWeight: 600 }}>Biasa</span>
                     </label>
                   </div>
+                </div>
+
+                {/* Checklist Pilihan Topping Dinamis dari Tabel Toppings */}
+                <div style={{ background: "var(--admin-surface-2)", padding: 14, borderRadius: 14, border: "1px solid var(--admin-border)" }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
+                    <label style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--admin-text)", display: "flex", alignItems: "center", gap: 6 }}>
+                      <span>🍳 Pilihan Topping yang Diizinkan</span>
+                    </label>
+                    <span style={{ fontSize: "0.7rem", fontWeight: 800, color: (formData.selectedToppingIds || []).length > 0 ? "#f97316" : "var(--admin-text-muted)" }}>
+                      {(formData.selectedToppingIds || []).length} dipilih
+                    </span>
+                  </div>
+                  <p style={{ fontSize: "0.72rem", color: "var(--admin-text-muted)", marginBottom: 10 }}>
+                    Centang topping apa saja yang bisa dipilih pelanggan untuk menu ini (kosongkan jika menu ini seperti minuman/snack tanpa topping):
+                  </p>
+
+                  {toppings.length === 0 ? (
+                    <p style={{ fontSize: "0.75rem", color: "var(--admin-text-muted)", fontStyle: "italic" }}>
+                      Belum ada topping di master data stok.
+                    </p>
+                  ) : (
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: 8 }}>
+                      {toppings.map((top) => {
+                        const isChecked = (formData.selectedToppingIds || []).includes(top.id);
+                        return (
+                          <label
+                            key={top.id}
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 8,
+                              padding: "8px 10px",
+                              borderRadius: 10,
+                              background: isChecked ? "rgba(249,115,22,0.12)" : "var(--admin-input-bg)",
+                              border: isChecked ? "1px solid #f97316" : "1px solid var(--admin-border)",
+                              cursor: "pointer",
+                              transition: "all 0.15s",
+                            }}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={isChecked}
+                              onChange={(e) => {
+                                const checked = e.target.checked;
+                                setFormData((prev) => {
+                                  const currentIds = prev.selectedToppingIds || [];
+                                  const nextIds = checked
+                                    ? [...currentIds, top.id]
+                                    : currentIds.filter((id) => id !== top.id);
+                                  return { ...prev, selectedToppingIds: nextIds };
+                                });
+                              }}
+                              style={{ accentColor: "#f97316", width: 15, height: 15, cursor: "pointer" }}
+                            />
+                            <div style={{ display: "flex", flexDirection: "column", minWidth: 0 }}>
+                              <span style={{ fontSize: "0.78rem", fontWeight: isChecked ? 700 : 500, color: "var(--admin-text)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                                {top.name}
+                              </span>
+                              <span style={{ fontSize: "0.68rem", color: "#f97316", fontWeight: 700 }}>
+                                +Rp {Number(top.price).toLocaleString("id-ID")}
+                              </span>
+                            </div>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
 
                 <div className="mobile-safe-bottom" style={{ display: "flex", gap: 10, marginTop: 10 }}>

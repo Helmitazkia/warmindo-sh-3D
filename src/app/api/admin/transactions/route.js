@@ -44,7 +44,7 @@ export async function GET(request) {
     const placeholders = orderIds.map(() => "?").join(", ");
 
     const [items] = await connection.execute(
-      `SELECT oi.id, oi.order_id, oi.menu_name, oi.unit_price AS price, oi.quantity, oi.subtotal, oi.notes
+      `SELECT oi.id, oi.order_id, oi.menu_name, oi.unit_price AS price, oi.quantity, oi.subtotal, oi.selected_toppings, oi.notes
        FROM order_items oi
        WHERE oi.order_id IN (${placeholders})`,
       orderIds
@@ -59,6 +59,13 @@ export async function GET(request) {
           ...i,
           price: Number(i.price),
           subtotal: Number(i.subtotal),
+          toppings: (() => {
+            try {
+              return i.selected_toppings ? JSON.parse(i.selected_toppings) : [];
+            } catch {
+              return [];
+            }
+          })(),
         })),
     }));
 

@@ -18,6 +18,7 @@ export const menus = [
     image: "/asset/Mie_Nyemek.png",
     isRecommended: true,
     isSpicy: true,
+    allowToppings: true,
     prepTime: "5-7 mnt",
   },
   {
@@ -30,6 +31,7 @@ export const menus = [
     image: "/asset/The_Floating_Hero_Object.png",
     isRecommended: true,
     isSpicy: true,
+    allowToppings: true,
     prepTime: "7-10 mnt",
   },
   {
@@ -42,6 +44,7 @@ export const menus = [
     image: "/asset/Makanan__Disajikan_dalam_mangkuk.png",
     isRecommended: false,
     isSpicy: false,
+    allowToppings: true,
     prepTime: "4-5 mnt",
   },
   {
@@ -54,6 +57,7 @@ export const menus = [
     image: "/asset/Makanan__Disajikan_dalam_mangkuk.png",
     isRecommended: false,
     isSpicy: true,
+    allowToppings: true,
     prepTime: "4-5 mnt",
   },
 
@@ -68,6 +72,7 @@ export const menus = [
     image: "/asset/Es_Matcha.png",
     isRecommended: true,
     isSpicy: false,
+    allowToppings: false,
     prepTime: "2-3 mnt",
   },
   {
@@ -80,6 +85,7 @@ export const menus = [
     image: "/asset/Es_Gula_Aren.png",
     isRecommended: true,
     isSpicy: false,
+    allowToppings: false,
     prepTime: "2-3 mnt",
   },
   {
@@ -92,6 +98,7 @@ export const menus = [
     image: "/asset/Es_Gula_Aren.png",
     isRecommended: false,
     isSpicy: false,
+    allowToppings: false,
     prepTime: "1-2 mnt",
   },
   {
@@ -104,6 +111,7 @@ export const menus = [
     image: "/asset/Es_Matcha.png",
     isRecommended: false,
     isSpicy: false,
+    allowToppings: false,
     prepTime: "2-3 mnt",
   },
 
@@ -118,6 +126,7 @@ export const menus = [
     image: "/asset/Pangsit_Chili_Oil.png",
     isRecommended: true,
     isSpicy: true,
+    allowToppings: false,
     prepTime: "5-6 mnt",
   },
   {
@@ -130,6 +139,7 @@ export const menus = [
     image: "/asset/Pangsit_Chili_Oil.png",
     isRecommended: false,
     isSpicy: false,
+    allowToppings: false,
     prepTime: "5 mnt",
   },
 

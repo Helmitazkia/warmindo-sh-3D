@@ -11,6 +11,10 @@ export default function OrderItemCard({
   onRemoveFromCart,
   itemNote,
   onUpdateNote,
+  availableToppings = [],
+  selectedToppings = [],
+  onToggleTopping,
+  onOpenCustomization,
 }) {
   const [showNoteModal, setShowNoteModal] = useState(false);
   const [tempNote, setTempNote] = useState(itemNote || "");
@@ -22,6 +26,19 @@ export default function OrderItemCard({
       maximumFractionDigits: 0,
     }).format(num);
   };
+
+  const allowedToppingIds = Array.isArray(item.allowToppingIds)
+    ? item.allowToppingIds
+    : item.allow_toppings
+      ? String(item.allow_toppings)
+        .split(",")
+        .map((s) => Number(s.trim()))
+        .filter(Boolean)
+      : [];
+  const hasToppingOptions = allowedToppingIds.length > 0;
+
+  const toppingTotal = (selectedToppings || []).reduce((sum, t) => sum + Number(t.price || 0), 0);
+  const currentUnitPrice = Number(item.price || 0) + toppingTotal;
 
   const handleSaveNote = () => {
     onUpdateNote(item.id, tempNote);
@@ -162,6 +179,29 @@ export default function OrderItemCard({
                 <span>✏️ Catatan: &quot;{itemNote}&quot;</span>
               </div>
             )}
+
+            {/* Rincian Topping Terpilih jika sudah ada di keranjang */}
+            {selectedToppings && selectedToppings.length > 0 && (
+              <div
+                onClick={() => onOpenCustomization && onOpenCustomization(item)}
+                title="Klik untuk ubah topping"
+                style={{
+                  fontSize: "0.68rem",
+                  color: "#f97316",
+                  background: "rgba(249,115,22,0.1)",
+                  border: "1px solid rgba(249,115,22,0.25)",
+                  padding: "3px 8px",
+                  borderRadius: 6,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 4,
+                  marginBottom: 6,
+                  cursor: "pointer",
+                }}
+              >
+                <span>🍳 +{selectedToppings.map((t) => t.name).join(", ")}</span>
+              </div>
+            )}
           </div>
 
           {/* Bottom row: Price & Action Buttons */}
@@ -174,20 +214,27 @@ export default function OrderItemCard({
               marginTop: 4,
             }}
           >
-            <span
-              style={{
-                fontWeight: 800,
-                fontSize: "0.92rem",
-                background: "linear-gradient(135deg, #fbbf24, #f97316)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                backgroundClip: "text",
-                fontFamily: "var(--font-poppins), sans-serif",
-                whiteSpace: "nowrap",
-              }}
-            >
-              {formatIDR(item.price)}
-            </span>
+            <div style={{ display: "flex", flexDirection: "column" }}>
+              <span
+                style={{
+                  fontWeight: 800,
+                  fontSize: "0.92rem",
+                  background: "linear-gradient(135deg, #fbbf24, #f97316)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  backgroundClip: "text",
+                  fontFamily: "var(--font-poppins), sans-serif",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {formatIDR(currentUnitPrice)}
+              </span>
+              {toppingTotal > 0 && (
+                <span style={{ fontSize: "0.62rem", color: "var(--text-muted)" }}>
+                  (termasuk topping)
+                </span>
+              )}
+            </div>
 
             {/* Cart Controller (+ / -) */}
             {cartQty > 0 ? (
@@ -257,7 +304,13 @@ export default function OrderItemCard({
                     {cartQty}
                   </span>
                   <button
-                    onClick={() => onAddToCart(item)}
+                    onClick={() => {
+                      if (hasToppingOptions && onOpenCustomization) {
+                        onOpenCustomization(item);
+                      } else {
+                        onAddToCart(item);
+                      }
+                    }}
                     style={{
                       width: 28,
                       height: 28,
@@ -279,6 +332,30 @@ export default function OrderItemCard({
                   </button>
                 </div>
               </div>
+            ) : hasToppingOptions ? (
+              <button
+                onClick={() => onOpenCustomization ? onOpenCustomization(item) : onAddToCart(item)}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 4,
+                  padding: "6px 14px",
+                  background: "linear-gradient(135deg, #f97316, #ea580c)",
+                  border: "none",
+                  borderRadius: 999,
+                  color: "#ffffff",
+                  fontWeight: 700,
+                  fontSize: "0.76rem",
+                  cursor: "pointer",
+                  boxShadow: "0 4px 14px rgba(249,115,22,0.3)",
+                  transition: "transform 0.15s",
+                  fontFamily: "var(--font-poppins), sans-serif",
+                  whiteSpace: "nowrap",
+                  flexShrink: 0,
+                }}
+              >
+                <span>+ Topping</span>
+              </button>
             ) : (
               <button
                 onClick={() => onAddToCart(item)}

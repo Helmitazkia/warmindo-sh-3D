@@ -1,6 +1,6 @@
 "use client";
 
-import { Home, LayoutGrid, Wallet, X, ChefHat, ShoppingBag, BarChart3, Layers, QrCode, Receipt } from "lucide-react";
+import { Home, LayoutGrid, Wallet, X, ChefHat, ShoppingBag, BarChart3, Layers, QrCode, Receipt, CreditCard } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
@@ -9,6 +9,7 @@ const navItems = [
   { name: "Pesanan Aktif", path: "/admin", icon: ShoppingBag, desc: "Kelola antrean pesanan" },
   { name: "Riwayat Transaksi", path: "/admin/transactions", icon: Receipt, desc: "Daftar pesanan selesai" },
   { name: "Kelola Produk", path: "/admin/master", icon: LayoutGrid, desc: "Stok & ketersediaan menu" },
+  { name: "Metode Pembayaran", path: "/admin/payments", icon: CreditCard, desc: "Rekening & barcode QRIS" },
   { name: "Master Kategori", path: "/admin/categories", icon: Layers, desc: "Grup menu & urutan katalog" },
   { name: "Master Meja & QR", path: "/admin/tables", icon: QrCode, desc: "Kapasitas meja & cetak QR" },
   { name: "Laporan Keuangan", path: "/admin/finance", icon: BarChart3, desc: "Pemasukan & pengeluaran" },

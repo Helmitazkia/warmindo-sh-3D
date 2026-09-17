@@ -210,8 +210,28 @@ export default function CompletedTransactionsPage() {
             </div>
             <div style={{ flex: 1 }}>
               <p style={{ fontWeight: 700, fontSize: "0.9rem", color: "var(--admin-text)" }}>{item.menu_name}</p>
+              {item.toppings && item.toppings.length > 0 && (
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginTop: 4 }}>
+                  {item.toppings.map((top, idx) => (
+                    <span
+                      key={idx}
+                      style={{
+                        fontSize: "0.68rem",
+                        fontWeight: 700,
+                        background: "rgba(16,185,129,0.12)",
+                        color: "#10b981",
+                        border: "1px solid rgba(16,185,129,0.25)",
+                        padding: "2px 6px",
+                        borderRadius: 6,
+                      }}
+                    >
+                      +{top.name}
+                    </span>
+                  ))}
+                </div>
+              )}
               {item.notes && (
-                <p style={{ fontSize: "0.75rem", color: "var(--admin-yellow)", marginTop: 2 }}>
+                <p style={{ fontSize: "0.75rem", color: "var(--admin-yellow)", marginTop: 4 }}>
                   📝 {item.notes}
                 </p>
               )}

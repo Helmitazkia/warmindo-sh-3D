@@ -12,7 +12,7 @@ export async function GET() {
     const menus = await query(
       `SELECT m.id, m.category_id AS categoryId, c.name AS categoryName, c.slug AS categorySlug,
               m.name, m.price, m.description, m.image_url AS image, m.is_available AS isAvailable,
-              m.is_recommended AS isRecommended
+              m.is_recommended AS isRecommended, m.allow_toppings AS allowToppings
        FROM menus m
        JOIN categories c ON m.category_id = c.id
        WHERE m.is_available = 1
@@ -41,6 +41,14 @@ export async function GET() {
           description: m.description || "",
           image: m.image || "/asset/The_Floating_Hero_Object.png",
           isRecommended: Boolean(m.isRecommended),
+          allow_toppings: m.allowToppings || "",
+          allowToppings: m.allowToppings || "",
+          allowToppingIds: m.allowToppings
+            ? String(m.allowToppings)
+                .split(",")
+                .map((id) => Number(id.trim()))
+                .filter(Boolean)
+            : [],
           isSpicy: m.name.toLowerCase().includes("chili") || m.name.toLowerCase().includes("nyemek") || m.name.toLowerCase().includes("dok"),
         })),
       },
