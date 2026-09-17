@@ -14,17 +14,72 @@ export default function FinanceDashboard() {
   const [description, setDescription] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const fetchFinance = async () => {
+  // Date Filter State
+  const getTodayStr = () => new Date().toISOString().slice(0, 10);
+  const [filterPreset, setFilterPreset] = useState("today"); // today, 7days, month, custom
+  const [dateRange, setDateRange] = useState({
+    startDate: getTodayStr(),
+    endDate: getTodayStr(),
+  });
+  const [customRange, setCustomRange] = useState({
+    startDate: getTodayStr(),
+    endDate: getTodayStr(),
+  });
+
+  const fetchFinance = async (start = dateRange.startDate, end = dateRange.endDate) => {
     setIsLoading(true);
     try {
-      const res = await fetch("/api/admin/expenses");
+      const res = await fetch(`/api/admin/expenses?startDate=${start}&endDate=${end}`);
       const json = await res.json();
       if (json.success) setData(json.data);
-    } catch (error) { console.error(error); }
-    finally { setIsLoading(false); }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  useEffect(() => { fetchFinance(); }, []);
+  useEffect(() => {
+    fetchFinance(dateRange.startDate, dateRange.endDate);
+  }, [dateRange]);
+
+  const handleSelectPreset = (preset) => {
+    setFilterPreset(preset);
+    const today = new Date();
+    const todayStr = getTodayStr();
+
+    if (preset === "today") {
+      setDateRange({ startDate: todayStr, endDate: todayStr });
+    } else if (preset === "7days") {
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(today.getDate() - 6);
+      setDateRange({
+        startDate: sevenDaysAgo.toISOString().slice(0, 10),
+        endDate: todayStr,
+      });
+    } else if (preset === "month") {
+      const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+      // Koreksi timezone local YYYY-MM-DD
+      const y = firstDay.getFullYear();
+      const m = String(firstDay.getMonth() + 1).padStart(2, "0");
+      const d = String(firstDay.getDate()).padStart(2, "0");
+      setDateRange({
+        startDate: `${y}-${m}-${d}`,
+        endDate: todayStr,
+      });
+    } else if (preset === "custom") {
+      setDateRange(customRange);
+    }
+  };
+
+  const handleApplyCustomDate = (e) => {
+    e.preventDefault();
+    if (customRange.startDate > customRange.endDate) {
+      alert("Tanggal mulai tidak boleh melebihi tanggal akhir");
+      return;
+    }
+    setDateRange(customRange);
+  };
 
   const handleSubmitExpense = async (e) => {
     e.preventDefault();
@@ -34,17 +89,25 @@ export default function FinanceDashboard() {
       const res = await fetch("/api/admin/expenses", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount: Number(amount), description }),
+        body: JSON.stringify({ amount: Number(amount), description, expense_date: dateRange.endDate }),
       });
       const json = await res.json();
       if (json.success) {
-        setAmount(""); setDescription(""); setIsModalOpen(false); fetchFinance();
-      } else { alert(json.message); }
-    } catch (error) { alert("Terjadi kesalahan."); }
-    finally { setIsSubmitting(false); }
+        setAmount("");
+        setDescription("");
+        setIsModalOpen(false);
+        fetchFinance(dateRange.startDate, dateRange.endDate);
+      } else {
+        alert(json.message);
+      }
+    } catch (error) {
+      alert("Terjadi kesalahan.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  if (isLoading || !data) {
+  if (isLoading && !data) {
     return (
       <div style={{ display: "flex", justifyContent: "center", padding: "80px 0" }}>
         <Loader2 className="animate-spin" size={32} style={{ color: "var(--accent-orange)" }} />
@@ -52,14 +115,115 @@ export default function FinanceDashboard() {
     );
   }
 
-  const isProfit = data.netProfit >= 0;
-  const today = new Date().toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+  const isProfit = (data?.netProfit ?? 0) >= 0;
+
+  const formatDateLabel = (startStr, endStr) => {
+    if (!startStr) return "";
+    const s = new Date(startStr);
+    const e = new Date(endStr);
+    const opt = { day: "numeric", month: "short", year: "numeric" };
+    if (startStr === endStr) {
+      return s.toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+    }
+    return `${s.toLocaleDateString("id-ID", opt)} — ${e.toLocaleDateString("id-ID", opt)}`;
+  };
 
   return (
     <div>
+      {/* Date Filter Pills */}
+      <div style={{ display: "flex", gap: 6, overflowX: "auto", marginBottom: 12 }} className="hide-scrollbar">
+        {[
+          { key: "today", label: "Hari Ini" },
+          { key: "7days", label: "7 Hari Terakhir" },
+          { key: "month", label: "Bulan Ini" },
+          { key: "custom", label: "Kustom" },
+        ].map((p) => (
+          <button
+            key={p.key}
+            onClick={() => handleSelectPreset(p.key)}
+            style={{
+              flexShrink: 0,
+              padding: "7px 14px",
+              borderRadius: 999,
+              border: `1px solid ${filterPreset === p.key ? "var(--accent-orange)" : "var(--admin-border)"}`,
+              background: filterPreset === p.key ? "var(--admin-pill-bg)" : "var(--admin-card-bg)",
+              color: filterPreset === p.key ? "var(--admin-pill-text)" : "var(--admin-text-muted)",
+              fontWeight: 700,
+              fontSize: "0.78rem",
+              cursor: "pointer",
+              transition: "all 0.2s",
+            }}
+          >
+            {p.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Custom Date Form if preset === 'custom' */}
+      {filterPreset === "custom" && (
+        <form
+          onSubmit={handleApplyCustomDate}
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 10,
+            padding: "12px 14px",
+            background: "var(--admin-card-bg)",
+            border: "1px solid var(--admin-card-border)",
+            borderRadius: 14,
+            marginBottom: 14,
+          }}
+        >
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 10 }}>
+            <div style={{ minWidth: 0 }}>
+              <span style={{ fontSize: "0.68rem", fontWeight: 700, color: "var(--admin-text-muted)", display: "block", marginBottom: 3 }}>Dari</span>
+              <input
+                type="date"
+                value={customRange.startDate}
+                onChange={(e) => setCustomRange((prev) => ({ ...prev, startDate: e.target.value }))}
+                style={{ width: "100%", background: "var(--admin-input-bg)", border: "1px solid var(--admin-border)", borderRadius: 8, padding: "8px", fontSize: "0.78rem", color: "var(--admin-text)", outline: "none", boxSizing: "border-box" }}
+              />
+            </div>
+            <div style={{ minWidth: 0 }}>
+              <span style={{ fontSize: "0.68rem", fontWeight: 700, color: "var(--admin-text-muted)", display: "block", marginBottom: 3 }}>Sampai</span>
+              <input
+                type="date"
+                value={customRange.endDate}
+                onChange={(e) => setCustomRange((prev) => ({ ...prev, endDate: e.target.value }))}
+                style={{ width: "100%", background: "var(--admin-input-bg)", border: "1px solid var(--admin-border)", borderRadius: 8, padding: "8px", fontSize: "0.78rem", color: "var(--admin-text)", outline: "none", boxSizing: "border-box" }}
+              />
+            </div>
+          </div>
+          <button
+            type="submit"
+            style={{
+              width: "100%",
+              padding: "10px",
+              borderRadius: 10,
+              border: "none",
+              background: "linear-gradient(135deg, #f97316, #ea580c)",
+              color: "#fff",
+              fontWeight: 800,
+              fontSize: "0.82rem",
+              cursor: "pointer",
+              boxShadow: "0 2px 8px rgba(249,115,22,0.3)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            Terapkan Filter
+          </button>
+        </form>
+      )}
+
       {/* Date chip */}
-      <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: "0.78rem", color: "var(--admin-text-muted)", marginBottom: 14 }}>
-        <Calendar size={14} /> {today}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: "0.78rem", color: "var(--admin-text-muted)", marginBottom: 14 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <Calendar size={14} style={{ color: "var(--accent-orange)" }} />
+          <span style={{ fontWeight: 600 }}>{formatDateLabel(data?.startDate || dateRange.startDate, data?.endDate || dateRange.endDate)}</span>
+        </div>
+        {isLoading && <Loader2 className="animate-spin" size={14} style={{ color: "var(--accent-orange)" }} />}
       </div>
 
       {/* P&L Card */}
@@ -161,7 +325,9 @@ export default function FinanceDashboard() {
         }}
       >
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-          <p style={{ fontWeight: 800, fontSize: "0.875rem", color: "var(--admin-text)" }}>Pengeluaran Hari Ini</p>
+          <p style={{ fontWeight: 800, fontSize: "0.875rem", color: "var(--admin-text)" }}>
+            Pengeluaran {data.startDate === data.endDate ? "Hari Ini" : "Periode Ini"}
+          </p>
           <span style={{ fontSize: "0.65rem", fontWeight: 700, color: "var(--admin-text-muted)", background: "var(--admin-surface-2)", padding: "3px 8px", borderRadius: 999 }}>
             {data.expenses.length} item
           </span>
@@ -169,7 +335,7 @@ export default function FinanceDashboard() {
 
         {data.expenses.length === 0 ? (
           <div style={{ textAlign: "center", padding: "20px 0" }}>
-            <p style={{ color: "var(--admin-text-muted)", fontSize: "0.875rem" }}>Belum ada pengeluaran hari ini.</p>
+            <p style={{ color: "var(--admin-text-muted)", fontSize: "0.875rem" }}>Belum ada pengeluaran pada periode ini.</p>
           </div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column" }}>

@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import MasterMenuCard from "@/components/admin/MasterMenuCard";
-import { Loader2, Plus, Search, CheckSquare, Square, SlidersHorizontal } from "lucide-react";
+import { Loader2, Plus, Search, CheckSquare, Square, SlidersHorizontal, Pencil, Trash2, X, AlertTriangle } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function MasterDataDashboard() {
   const [menus, setMenus] = useState([]);
@@ -17,7 +18,7 @@ export default function MasterDataDashboard() {
     setTimeout(() => setToast(null), 4000);
   };
 
-  // Modal states
+  // Modal Menu states
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingMenuId, setEditingMenuId] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -31,14 +32,154 @@ export default function MasterDataDashboard() {
     imagePreview: null,
   });
 
-  const [kitchenStock, setKitchenStock] = useState([
-    { name: "Telur Ayam", status: "Siap Saji (48)", available: true },
-    { name: "Kornet Sapi", status: "Siap Saji (12)", available: true },
-    { name: "Keju Cheddar", status: "Siap Saji", available: true },
-    { name: "Sosis Bakar", status: "Stok Habis", available: false },
-    { name: "Sayur Sawi", status: "Menipis (4)", available: true },
-    { name: "Bawang Goreng", status: "Siap Saji", available: true },
-  ]);
+
+  // Topping CRUD & Stock states
+  const [toppings, setToppings] = useState([]);
+  const [isLoadingToppings, setIsLoadingToppings] = useState(true);
+  const [isToppingModalOpen, setIsToppingModalOpen] = useState(false);
+  const [editingToppingId, setEditingToppingId] = useState(null);
+  const [isSubmittingTopping, setIsSubmittingTopping] = useState(false);
+  const [toppingToDelete, setToppingToDelete] = useState(null);
+  const [isDeletingTopping, setIsDeletingTopping] = useState(false);
+  const [toppingForm, setToppingForm] = useState({
+    name: "",
+    price: "",
+    stock_qty: 0,
+    unit: "Porsi",
+    status_label: "Siap Saji",
+    is_available: true,
+  });
+
+  const fetchToppings = async () => {
+    setIsLoadingToppings(true);
+    try {
+      const res = await fetch("/api/admin/toppings");
+      const json = await res.json();
+      if (json.success) {
+        setToppings(json.data);
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsLoadingToppings(false);
+    }
+  };
+
+  const handleToggleTopping = async (id, is_available) => {
+    try {
+      const res = await fetch("/api/admin/toppings", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, is_available }),
+      });
+      const json = await res.json();
+      if (json.success) {
+        setToppings((prev) =>
+          prev.map((t) =>
+            t.id === id
+              ? { ...t, is_available, status_label: is_available ? (t.stock_qty > 5 ? "Siap Saji" : "Menipis") : "Stok Habis" }
+              : t
+          )
+        );
+        showToast("Status stok topping diperbarui", "success");
+      } else {
+        showToast("Gagal update status topping");
+      }
+    } catch (error) {
+      console.error(error);
+      showToast("Terjadi kesalahan jaringan");
+    }
+  };
+
+  const handleOpenAddTopping = () => {
+    setEditingToppingId(null);
+    setToppingForm({
+      name: "",
+      price: "",
+      stock_qty: 10,
+      unit: "Porsi",
+      status_label: "Siap Saji",
+      is_available: true,
+    });
+    setIsToppingModalOpen(true);
+  };
+
+  const handleOpenEditTopping = (topping) => {
+    setEditingToppingId(topping.id);
+    setToppingForm({
+      name: topping.name,
+      price: topping.price !== undefined && topping.price !== null ? topping.price : "",
+      stock_qty: topping.stock_qty,
+      unit: topping.unit || "Porsi",
+      status_label: topping.status_label || "Siap Saji",
+      is_available: topping.is_available,
+    });
+    setIsToppingModalOpen(true);
+  };
+
+  const handleSubmitTopping = async (e) => {
+    e.preventDefault();
+    if (!toppingForm.name.trim()) {
+      showToast("Nama topping wajib diisi");
+      return;
+    }
+    setIsSubmittingTopping(true);
+    try {
+      const isEdit = !!editingToppingId;
+      const url = "/api/admin/toppings";
+      const method = isEdit ? "PUT" : "POST";
+      const payload = {
+        ...(isEdit ? { id: editingToppingId } : {}),
+        name: toppingForm.name.trim(),
+        price: Number(toppingForm.price) || 0,
+        stock_qty: Number(toppingForm.stock_qty) || 0,
+        unit: toppingForm.unit.trim() || "Porsi",
+        status_label: toppingForm.status_label.trim() || "Siap Saji",
+        is_available: toppingForm.is_available ? 1 : 0,
+      };
+
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const json = await res.json();
+      if (json.success) {
+        setIsToppingModalOpen(false);
+        showToast(isEdit ? "Topping berhasil diubah!" : "Topping baru berhasil ditambahkan!", "success");
+        fetchToppings();
+      } else {
+        showToast(json.message || "Gagal menyimpan topping");
+      }
+    } catch (err) {
+      console.error(err);
+      showToast("Terjadi kesalahan koneksi");
+    } finally {
+      setIsSubmittingTopping(false);
+    }
+  };
+
+  const confirmDeleteTopping = async () => {
+    if (!toppingToDelete) return;
+    setIsDeletingTopping(true);
+    try {
+      const res = await fetch(`/api/admin/toppings?id=${toppingToDelete.id}`, { method: "DELETE" });
+      const json = await res.json();
+      if (json.success) {
+        setToppingToDelete(null);
+        setIsToppingModalOpen(false);
+        showToast("Topping berhasil dihapus dari stok", "success");
+        fetchToppings();
+      } else {
+        showToast(json.message || "Gagal menghapus topping");
+      }
+    } catch (err) {
+      console.error(err);
+      showToast("Terjadi kesalahan server");
+    } finally {
+      setIsDeletingTopping(false);
+    }
+  };
 
   const fetchMenus = async () => {
     setIsLoading(true);
@@ -49,14 +190,20 @@ export default function MasterDataDashboard() {
         setMenus(json.data.menus);
         setDbCategories(json.data.categories);
         if (json.data.categories.length > 0) {
-          setFormData(prev => ({ ...prev, category_id: prev.category_id || json.data.categories[0].id }));
+          setFormData((prev) => ({ ...prev, category_id: prev.category_id || json.data.categories[0].id }));
         }
       }
-    } catch (error) { console.error(error); }
-    finally { setIsLoading(false); }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  useEffect(() => { fetchMenus(); }, []);
+  useEffect(() => {
+    fetchMenus();
+    fetchToppings();
+  }, []);
 
   const handleOpenAdd = () => {
     setEditingMenuId(null);
@@ -325,50 +472,102 @@ export default function MasterDataDashboard() {
           borderRadius: 18,
           padding: 16,
           marginBottom: 16,
+          overflow: "hidden",
+          boxSizing: "border-box",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-          <p style={{ fontWeight: 800, fontSize: "0.875rem", color: "var(--admin-text)", display: "flex", alignItems: "center", gap: 6 }}>
-            <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#f59e0b", display: "inline-block", boxShadow: "0 0 6px #f59e0b", animation: "pulse 2s infinite" }} />
-            Stok Cepat Topping
-          </p>
-          <span style={{ fontSize: "0.65rem", fontWeight: 700, color: "var(--admin-yellow)", background: "var(--admin-yellow-soft)", padding: "2px 8px", borderRadius: 999, border: "1px solid rgba(245,158,11,0.2)" }}>
-            LIVE KITCHEN
-          </span>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8, marginBottom: 12 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
+            <p style={{ fontWeight: 800, fontSize: "0.875rem", color: "var(--admin-text)", display: "flex", alignItems: "center", gap: 6, margin: 0 }}>
+              <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#f59e0b", display: "inline-block", boxShadow: "0 0 6px #f59e0b", animation: "pulse 2s infinite", flexShrink: 0 }} />
+              Stok Cepat Topping
+            </p>
+            <span style={{ fontSize: "0.62rem", fontWeight: 700, color: "var(--admin-yellow)", background: "var(--admin-yellow-soft)", padding: "2px 8px", borderRadius: 999, border: "1px solid rgba(245,158,11,0.2)", flexShrink: 0 }}>
+              LIVE KITCHEN
+            </span>
+          </div>
+          <button
+            onClick={handleOpenAddTopping}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 4,
+              padding: "5px 10px",
+              borderRadius: 8,
+              border: "1px solid var(--accent-orange)",
+              background: "var(--admin-pill-bg)",
+              color: "var(--admin-pill-text)",
+              fontSize: "0.72rem",
+              fontWeight: 700,
+              cursor: "pointer",
+              flexShrink: 0,
+            }}
+          >
+            <Plus size={13} /> Tambah Topping
+          </button>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-          {kitchenStock.map((item, idx) => (
-            <div
-              key={idx}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                padding: "10px 12px",
-                background: "var(--admin-surface-2)",
-                borderRadius: 12,
-                border: "1px solid var(--admin-border)",
-              }}
-            >
-              <div>
-                <p style={{ fontWeight: 700, fontSize: "0.78rem", color: "var(--admin-text)" }}>{item.name}</p>
-                <p style={{ fontSize: "0.65rem", color: item.available ? "var(--admin-green)" : "var(--admin-red)", marginTop: 1, fontWeight: 600 }}>
-                  {item.status}
-                </p>
-              </div>
-              <button
-                onClick={() => {
-                  const newStock = [...kitchenStock];
-                  newStock[idx].available = !newStock[idx].available;
-                  setKitchenStock(newStock);
+
+        {isLoadingToppings ? (
+          <div style={{ display: "flex", justifyContent: "center", padding: "16px 0" }}>
+            <Loader2 className="animate-spin" size={20} style={{ color: "var(--accent-orange)" }} />
+          </div>
+        ) : toppings.length === 0 ? (
+          <div style={{ textAlign: "center", padding: "14px 0", color: "var(--admin-text-muted)", fontSize: "0.8rem" }}>
+            Belum ada stok topping. Klik Tambah Topping untuk mengisi.
+          </div>
+        ) : (
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 8, width: "100%", boxSizing: "border-box" }}>
+            {toppings.map((item) => (
+              <div
+                key={item.id}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  padding: "8px 10px",
+                  background: "var(--admin-surface-2)",
+                  borderRadius: 12,
+                  border: `1px solid ${item.is_available ? "var(--admin-border)" : "rgba(239,68,68,0.3)"}`,
+                  opacity: item.is_available ? 1 : 0.75,
+                  minWidth: 0,
+                  overflow: "hidden",
+                  boxSizing: "border-box",
                 }}
-                style={{ background: "none", border: "none", cursor: "pointer", color: item.available ? "var(--accent-orange)" : "var(--admin-text-muted)" }}
               >
-                {item.available ? <CheckSquare size={20} /> : <Square size={20} />}
-              </button>
-            </div>
-          ))}
-        </div>
+                <div style={{ minWidth: 0, flex: 1, paddingRight: 4, overflow: "hidden" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 3, minWidth: 0 }}>
+                    <p style={{ fontWeight: 700, fontSize: "0.76rem", color: "var(--admin-text)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", margin: 0 }}>
+                      {item.name}
+                    </p>
+                    <button
+                      onClick={() => handleOpenEditTopping(item)}
+                      title="Ubah topping"
+                      style={{ background: "none", border: "none", padding: 1, cursor: "pointer", color: "var(--admin-text-muted)", display: "flex", alignItems: "center", flexShrink: 0 }}
+                    >
+                      <Pencil size={11} />
+                    </button>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 2, flexWrap: "wrap" }}>
+                    <span style={{ fontSize: "0.68rem", fontWeight: 800, color: "#f97316" }}>
+                      {item.price > 0 ? `+Rp ${Number(item.price).toLocaleString("id-ID")}` : "Gratis"}
+                    </span>
+                    <span style={{ fontSize: "0.55rem", color: "var(--admin-text-muted)" }}>•</span>
+                    <p style={{ fontSize: "0.62rem", color: item.is_available ? "var(--admin-green)" : "var(--admin-red)", fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", margin: 0 }}>
+                      {item.status_label || (item.is_available ? "Siap Saji" : "Stok Habis")} ({item.stock_qty} {item.unit})
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => handleToggleTopping(item.id, !item.is_available)}
+                  title={item.is_available ? "Klik untuk tandai habis" : "Klik untuk tandai siap saji"}
+                  style={{ background: "none", border: "none", cursor: "pointer", color: item.is_available ? "var(--accent-orange)" : "var(--admin-text-muted)", flexShrink: 0, padding: 0, display: "flex", alignItems: "center" }}
+                >
+                  {item.is_available ? <CheckSquare size={18} /> : <Square size={18} />}
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Menu List */}
@@ -509,6 +708,265 @@ export default function MasterDataDashboard() {
           </div>
         </div>
       )}
+
+      {/* Modal Tambah / Edit Topping */}
+      {isToppingModalOpen && (
+        <div
+          style={{ position: "fixed", inset: 0, zIndex: 65, display: "flex", alignItems: "flex-end", justifyContent: "center", background: "rgba(0,0,0,0.55)", backdropFilter: "blur(4px)" }}
+          onClick={() => setIsToppingModalOpen(false)}
+        >
+          <div
+            style={{ width: "100%", maxWidth: 640, maxHeight: "90dvh", background: "var(--admin-header-bg)", border: "1px solid var(--admin-border)", borderRadius: "24px 24px 0 0", overflow: "hidden", boxShadow: "0 -20px 60px rgba(0,0,0,0.4)", display: "flex", flexDirection: "column" }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal header */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", background: "linear-gradient(135deg, #f97316, #ea580c)", flexShrink: 0 }}>
+              <h3 style={{ fontWeight: 800, fontSize: "1.05rem", color: "#fff" }}>
+                {editingToppingId ? "✏️ Ubah Data Topping" : "🍳 Tambah Topping Baru"}
+              </h3>
+              <button onClick={() => setIsToppingModalOpen(false)} style={{ width: 32, height: 32, borderRadius: "50%", background: "rgba(255,255,255,0.2)", border: "none", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+                <X size={16} />
+              </button>
+            </div>
+
+            <div style={{ flex: 1, overflowY: "auto", padding: 20 }}>
+              <form onSubmit={handleSubmitTopping} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                <div>
+                  <label style={{ display: "block", fontSize: "0.8rem", fontWeight: 700, color: "var(--admin-text-muted)", marginBottom: 6 }}>
+                    Nama Topping / Ekstra *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Contoh: Telur Bebek, Bakso Sapi"
+                    value={toppingForm.name}
+                    onChange={(e) => setToppingForm((prev) => ({ ...prev, name: e.target.value }))}
+                    style={{ width: "100%", background: "var(--admin-input-bg)", border: "1px solid var(--admin-border)", borderRadius: 12, padding: "12px", fontSize: "0.9rem", color: "var(--admin-text)", outline: "none" }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: "block", fontSize: "0.8rem", fontWeight: 700, color: "var(--admin-text-muted)", marginBottom: 6 }}>
+                    Harga Tambahan per Porsi (Rp) *
+                  </label>
+                  <div style={{ position: "relative" }}>
+                    <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", fontSize: "0.85rem", fontWeight: 700, color: "var(--admin-text-muted)" }}>Rp</span>
+                    <input
+                      type="number"
+                      min="0"
+                      step="500"
+                      placeholder="0 (Gratis) atau misal 2000"
+                      value={toppingForm.price}
+                      onChange={(e) => setToppingForm((prev) => ({ ...prev, price: e.target.value }))}
+                      style={{ width: "100%", background: "var(--admin-input-bg)", border: "1px solid var(--admin-border)", borderRadius: 12, padding: "12px 12px 12px 40px", fontSize: "0.9rem", color: "var(--admin-text)", outline: "none" }}
+                    />
+                  </div>
+                  <span style={{ fontSize: "0.72rem", color: "var(--admin-text-muted)", marginTop: 4, display: "block" }}>
+                    Biaya tambahan yang dikenakan ke pelanggan saat memilih topping ini.
+                  </span>
+                </div>
+
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                  <div>
+                    <label style={{ display: "block", fontSize: "0.8rem", fontWeight: 700, color: "var(--admin-text-muted)", marginBottom: 6 }}>
+                      Jumlah Stok *
+                    </label>
+                    <input
+                      type="number"
+                      required
+                      min="0"
+                      value={toppingForm.stock_qty}
+                      onChange={(e) => setToppingForm((prev) => ({ ...prev, stock_qty: e.target.value }))}
+                      style={{ width: "100%", background: "var(--admin-input-bg)", border: "1px solid var(--admin-border)", borderRadius: 12, padding: "12px", fontSize: "0.9rem", color: "var(--admin-text)", outline: "none" }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: "block", fontSize: "0.8rem", fontWeight: 700, color: "var(--admin-text-muted)", marginBottom: 6 }}>
+                      Satuan *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Porsi / Butir / Pcs / Ikat"
+                      value={toppingForm.unit}
+                      onChange={(e) => setToppingForm((prev) => ({ ...prev, unit: e.target.value }))}
+                      style={{ width: "100%", background: "var(--admin-input-bg)", border: "1px solid var(--admin-border)", borderRadius: 12, padding: "12px", fontSize: "0.9rem", color: "var(--admin-text)", outline: "none" }}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label style={{ display: "block", fontSize: "0.8rem", fontWeight: 700, color: "var(--admin-text-muted)", marginBottom: 6 }}>
+                    Label Status Dapur
+                  </label>
+                  <select
+                    value={toppingForm.status_label}
+                    onChange={(e) => setToppingForm((prev) => ({ ...prev, status_label: e.target.value }))}
+                    style={{ width: "100%", background: "var(--admin-input-bg)", border: "1px solid var(--admin-border)", borderRadius: 12, padding: "12px", fontSize: "0.9rem", color: "var(--admin-text)", outline: "none" }}
+                  >
+                    <option value="Siap Saji">Siap Saji</option>
+                    <option value="Menipis">Menipis</option>
+                    <option value="Stok Habis">Stok Habis</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label style={{ display: "block", fontSize: "0.8rem", fontWeight: 700, color: "var(--admin-text-muted)", marginBottom: 6 }}>
+                    Ketersediaan Langsung
+                  </label>
+                  <div style={{ display: "flex", gap: 10 }}>
+                    <label style={{ flex: 1, display: "flex", alignItems: "center", gap: 8, padding: "12px", borderRadius: 12, border: toppingForm.is_available ? "1px solid #10b981" : "1px solid var(--admin-border)", background: toppingForm.is_available ? "rgba(16,185,129,0.1)" : "var(--admin-input-bg)", cursor: "pointer" }}>
+                      <input
+                        type="radio"
+                        name="is_available_topping"
+                        checked={toppingForm.is_available}
+                        onChange={() => setToppingForm((prev) => ({ ...prev, is_available: true }))}
+                        style={{ accentColor: "#10b981" }}
+                      />
+                      <span style={{ fontSize: "0.85rem", color: "var(--admin-text)", fontWeight: 600 }}>✅ Tersedia</span>
+                    </label>
+                    <label style={{ flex: 1, display: "flex", alignItems: "center", gap: 8, padding: "12px", borderRadius: 12, border: !toppingForm.is_available ? "1px solid #ef4444" : "1px solid var(--admin-border)", background: !toppingForm.is_available ? "rgba(239,68,68,0.1)" : "var(--admin-input-bg)", cursor: "pointer" }}>
+                      <input
+                        type="radio"
+                        name="is_available_topping"
+                        checked={!toppingForm.is_available}
+                        onChange={() => setToppingForm((prev) => ({ ...prev, is_available: false }))}
+                        style={{ accentColor: "#ef4444" }}
+                      />
+                      <span style={{ fontSize: "0.85rem", color: "var(--admin-text)", fontWeight: 600 }}>❌ Stok Habis</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div className="mobile-safe-bottom" style={{ display: "flex", gap: 10, marginTop: 10 }}>
+                  {editingToppingId && (
+                    <button
+                      type="button"
+                      onClick={() => setToppingToDelete({ id: editingToppingId, name: toppingForm.name })}
+                      style={{ padding: "14px 18px", borderRadius: 12, border: "1px solid rgba(239,68,68,0.3)", background: "var(--admin-red-soft)", color: "var(--admin-red)", fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}
+                    >
+                      <Trash2 size={16} /> Hapus
+                    </button>
+                  )}
+                  <button type="button" onClick={() => setIsToppingModalOpen(false)} style={{ flex: 1, padding: "14px", borderRadius: 12, border: "1px solid var(--admin-border)", background: "var(--admin-surface-2)", color: "var(--admin-text-muted)", fontWeight: 700, cursor: "pointer" }}>
+                    Batal
+                  </button>
+                  <button type="submit" disabled={isSubmittingTopping} style={{ flex: 1, padding: "14px", borderRadius: 12, border: "none", background: "linear-gradient(135deg, #f97316, #ea580c)", color: "#fff", fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, cursor: "pointer" }}>
+                    {isSubmittingTopping ? <Loader2 className="animate-spin" size={18} /> : (editingToppingId ? "Simpan Topping" : "Tambah Topping")}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modern Dialog Konfirmasi Hapus Topping */}
+      <AnimatePresence>
+        {toppingToDelete && (
+          <div
+            style={{
+              position: "fixed",
+              inset: 0,
+              zIndex: 120,
+              background: "rgba(0,0,0,0.6)",
+              backdropFilter: "blur(6px)",
+              WebkitBackdropFilter: "blur(6px)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: "20px",
+            }}
+            onClick={() => !isDeletingTopping && setToppingToDelete(null)}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 15 }}
+              transition={{ type: "spring", bounce: 0.25, duration: 0.3 }}
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                width: "100%",
+                maxWidth: 360,
+                background: "var(--admin-card-bg)",
+                border: "1px solid var(--admin-card-border)",
+                borderRadius: 24,
+                padding: "24px 20px",
+                textAlign: "center",
+                boxShadow: "0 25px 50px -12px rgba(0,0,0,0.5)",
+              }}
+            >
+              <div
+                style={{
+                  width: 56,
+                  height: 56,
+                  borderRadius: "50%",
+                  background: "var(--admin-red-soft)",
+                  color: "var(--admin-red)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  margin: "0 auto 16px",
+                  boxShadow: "0 0 20px rgba(239,68,68,0.2)",
+                }}
+              >
+                <Trash2 size={26} />
+              </div>
+
+              <h3 style={{ fontSize: "1.1rem", fontWeight: 800, color: "var(--admin-text)", marginBottom: 8 }}>
+                Hapus Topping dari Stok?
+              </h3>
+              <p style={{ fontSize: "0.85rem", color: "var(--admin-text-muted)", lineHeight: 1.45, marginBottom: 20 }}>
+                Yakin ingin menghapus <strong>{toppingToDelete.name}</strong> dari daftar stok topping dapur? Data yang dihapus tidak dapat dipulihkan.
+              </p>
+
+              <div style={{ display: "flex", gap: 10 }}>
+                <button
+                  type="button"
+                  disabled={isDeletingTopping}
+                  onClick={() => setToppingToDelete(null)}
+                  style={{
+                    flex: 1,
+                    padding: "12px",
+                    borderRadius: 12,
+                    border: "1px solid var(--admin-border)",
+                    background: "var(--admin-surface-2)",
+                    color: "var(--admin-text)",
+                    fontWeight: 700,
+                    fontSize: "0.85rem",
+                    cursor: "pointer",
+                  }}
+                >
+                  Batal
+                </button>
+                <button
+                  type="button"
+                  disabled={isDeletingTopping}
+                  onClick={confirmDeleteTopping}
+                  style={{
+                    flex: 1,
+                    padding: "12px",
+                    borderRadius: 12,
+                    border: "none",
+                    background: "linear-gradient(135deg, #ef4444, #dc2626)",
+                    color: "#fff",
+                    fontWeight: 800,
+                    fontSize: "0.85rem",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 6,
+                    boxShadow: "0 4px 14px rgba(239,68,68,0.35)",
+                  }}
+                >
+                  {isDeletingTopping ? <Loader2 className="animate-spin" size={16} /> : "Ya, Hapus"}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

@@ -78,6 +78,9 @@ export async function PATCH(request) {
     } else if (action === "COMPLETED") {
       sql = "UPDATE orders SET order_status = 'COMPLETED', updated_at = NOW() WHERE id = ?";
       params = [id];
+    } else if (action === "CANCELLED") {
+      sql = "UPDATE orders SET order_status = 'CANCELLED', updated_at = NOW() WHERE id = ?";
+      params = [id];
     } else {
       return NextResponse.json(
         { success: false, message: "Invalid action" },
