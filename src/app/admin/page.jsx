@@ -63,9 +63,9 @@ export default function AdminDashboard() {
         style={{
           background: "linear-gradient(135deg, #f97316, #ea580c)",
           color: "#fff",
-          padding: "16px 20px",
+          padding: isModal ? "10px 20px 16px" : "16px 20px",
           flexShrink: 0,
-          borderRadius: isModal ? "24px 24px 0 0" : "18px 18px 0 0",
+          borderRadius: isModal ? "0" : "18px 18px 0 0",
         }}
       >
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
@@ -416,13 +416,11 @@ export default function AdminDashboard() {
           <div
             style={{
               position: "fixed",
-              top: 0,
-              left: 0,
-              right: 0,
-              height: "100dvh",
+              inset: 0,
               zIndex: 100,
               background: "rgba(0,0,0,0.5)",
               backdropFilter: "blur(4px)",
+              WebkitBackdropFilter: "blur(4px)",
               display: "flex",
               alignItems: "flex-end",
               justifyContent: "center",
@@ -433,12 +431,12 @@ export default function AdminDashboard() {
               initial={{ y: "100%" }}
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
-              transition={{ type: "spring", bounce: 0, duration: 0.4 }}
+              transition={{ type: "spring", bounce: 0, duration: 0.35 }}
               onClick={(e) => e.stopPropagation()}
               style={{
                 width: "100%",
                 maxWidth: 640,
-                maxHeight: "85dvh",
+                maxHeight: "90dvh",
                 background: "var(--admin-bg)",
                 borderRadius: "24px 24px 0 0",
                 overflow: "hidden",
@@ -447,9 +445,9 @@ export default function AdminDashboard() {
                 boxShadow: "0 -20px 60px rgba(0,0,0,0.4)",
               }}
             >
-              {/* Drag handle */}
-              <div style={{ display: "flex", justifyContent: "center", padding: "12px 0 8px", flexShrink: 0, background: "var(--admin-bg)" }}>
-                <div style={{ width: 40, height: 4, borderRadius: 999, background: "var(--admin-border)" }} />
+              {/* Drag handle integrated with header */}
+              <div style={{ display: "flex", justifyContent: "center", padding: "10px 0 4px", flexShrink: 0, background: "linear-gradient(135deg, #f97316, #ea580c)" }}>
+                <div style={{ width: 38, height: 4, borderRadius: 999, background: "rgba(255,255,255,0.4)" }} />
               </div>
               <div style={{ flex: 1, overflow: "hidden", display: "flex", flexDirection: "column" }}>
                 <OrderDetailPanel order={selectedOrder} onClose={() => setSelectedOrder(null)} isModal />

@@ -433,7 +433,17 @@ export default function MasterPaymentsSection({ showToast }) {
       </div>
 
       {/* Category Filter Pills */}
-      <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 6, marginBottom: 14 }} className="no-scrollbar">
+      <div
+        style={{
+          display: "flex",
+          gap: 8,
+          overflowX: "auto",
+          marginBottom: 14,
+          scrollbarWidth: "none",
+          msOverflowStyle: "none",
+        }}
+        className="hide-scrollbar"
+      >
         {filterTabs.map((cat) => (
           <button
             key={cat.id}

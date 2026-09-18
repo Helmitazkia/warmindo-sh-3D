@@ -225,35 +225,45 @@ export default function MasterCategoriesPage() {
         </div>
       )}
 
-      {/* Header Info */}
-      <div style={{ marginBottom: 16 }}>
-        <h1 style={{ fontSize: "1.25rem", fontWeight: 900, color: "var(--admin-text)", letterSpacing: "-0.02em" }}>
-          🏷️ Master Kategori
-        </h1>
-        <p style={{ fontSize: "0.78rem", color: "var(--admin-text-muted)", marginTop: 2 }}>
-          Atur kelompok menu katalog produk, slug URL, dan urutan tampil.
+      {/* Summary Banner */}
+      <div
+        style={{
+          background: "linear-gradient(135deg, #ea580c, #f97316)",
+          borderRadius: 20,
+          padding: "18px 20px",
+          marginBottom: 16,
+          color: "#fff",
+          boxShadow: "0 8px 24px rgba(234,88,12,0.22)",
+        }}
+      >
+        <p style={{ fontSize: "0.75rem", fontWeight: 600, opacity: 0.85, marginBottom: 4 }}>
+          Master Kategori Menu
         </p>
-      </div>
-
-      {/* Summary KPI Cards */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10, marginBottom: 16 }}>
-        <div style={{ background: "var(--admin-card-bg)", border: "1px solid var(--admin-border)", borderRadius: 16, padding: "12px", textAlign: "center" }}>
-          <div style={{ fontSize: "0.7rem", color: "var(--admin-text-muted)", fontWeight: 700 }}>Total Kategori</div>
-          <div style={{ fontSize: "1.3rem", fontWeight: 900, color: "var(--admin-text)", marginTop: 2 }}>
-            {categories.length}
-          </div>
-        </div>
-        <div style={{ background: "var(--admin-card-bg)", border: "1px solid var(--admin-border)", borderRadius: 16, padding: "12px", textAlign: "center" }}>
-          <div style={{ fontSize: "0.7rem", color: "#10b981", fontWeight: 700 }}>Aktif</div>
-          <div style={{ fontSize: "1.3rem", fontWeight: 900, color: "#10b981", marginTop: 2 }}>
-            {totalActive}
-          </div>
-        </div>
-        <div style={{ background: "var(--admin-card-bg)", border: "1px solid var(--admin-border)", borderRadius: 16, padding: "12px", textAlign: "center" }}>
-          <div style={{ fontSize: "0.7rem", color: "#f97316", fontWeight: 700 }}>Total Produk</div>
-          <div style={{ fontSize: "1.3rem", fontWeight: 900, color: "#f97316", marginTop: 2 }}>
-            {totalMenus}
-          </div>
+        <p suppressHydrationWarning style={{ fontSize: "1.8rem", fontWeight: 900, fontVariantNumeric: "tabular-nums", marginBottom: 12 }}>
+          {totalActive} Kategori Aktif
+        </p>
+        <div style={{ display: "flex", gap: 8 }}>
+          {[
+            { label: "Total Kategori", value: categories.length },
+            { label: "Aktif di Katalog", value: totalActive },
+            { label: "Total Produk", value: totalMenus, highlight: true },
+          ].map((stat, i) => (
+            <div
+              key={i}
+              style={{
+                flex: 1,
+                background: "rgba(255,255,255,0.18)",
+                borderRadius: 12,
+                padding: "8px",
+                textAlign: "center",
+              }}
+            >
+              <div style={{ fontSize: "0.6rem", fontWeight: 600, opacity: 0.85, marginBottom: 2 }}>{stat.label}</div>
+              <div style={{ fontSize: "1.2rem", fontWeight: 900, color: stat.highlight && stat.value > 0 ? "#fef08a" : "#fff" }}>
+                {stat.value}
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 
@@ -288,171 +298,198 @@ export default function MasterCategoriesPage() {
         />
       </div>
 
-      {/* List Categories */}
-      {isLoading ? (
-        <div style={{ display: "flex", justifyContent: "center", padding: "60px 0" }}>
-          <Loader2 className="animate-spin" size={30} style={{ color: "var(--accent-orange)" }} />
+      {/* Category Card Container */}
+      <div
+        style={{
+          background: "var(--admin-card-bg)",
+          border: "1px solid var(--admin-card-border)",
+          borderRadius: 18,
+          padding: 16,
+          marginBottom: 80,
+          overflow: "hidden",
+          boxSizing: "border-box",
+        }}
+      >
+        {/* Card Header like Kelola Produk */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8, marginBottom: 14 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
+            <p style={{ fontWeight: 800, fontSize: "0.875rem", color: "var(--admin-text)", display: "flex", alignItems: "center", gap: 6, margin: 0 }}>
+              <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#f97316", display: "inline-block", boxShadow: "0 0 6px #f97316", animation: "pulse 2s infinite", flexShrink: 0 }} />
+              Daftar Kategori
+            </p>
+            <span style={{ fontSize: "0.62rem", fontWeight: 700, color: "var(--admin-pill-text)", background: "var(--admin-pill-bg)", padding: "2px 8px", borderRadius: 999, border: "1px solid rgba(249,115,22,0.2)", flexShrink: 0 }}>
+              KATALOG MENU
+            </span>
+          </div>
+          <span style={{ fontSize: "0.72rem", color: "var(--admin-text-sub)" }}>
+            {filteredCategories.length} kategori ditemukan
+          </span>
         </div>
-      ) : filteredCategories.length === 0 ? (
-        <div style={{ textAlign: "center", padding: "50px 20px", background: "var(--admin-card-bg)", borderRadius: 18, border: "1px dashed var(--admin-border)" }}>
-          <Layers size={36} style={{ color: "var(--admin-text-muted)", margin: "0 auto 10px" }} />
-          <p style={{ fontWeight: 700, fontSize: "0.9rem", color: "var(--admin-text)" }}>Tidak ada kategori</p>
-          <p style={{ fontSize: "0.75rem", color: "var(--admin-text-muted)", marginTop: 4 }}>
-            {searchQuery ? "Coba kata kunci pencarian lain." : "Klik tombol '+ Tambah Kategori' untuk membuat kategori baru."}
-          </p>
-        </div>
-      ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: 10, paddingBottom: 80 }}>
-          {filteredCategories.map((cat) => (
-            <div
-              key={cat.id}
-              style={{
-                background: "var(--admin-card-bg)",
-                border: "1px solid var(--admin-border)",
-                borderRadius: 18,
-                padding: "14px 16px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                gap: 12,
-                boxShadow: "0 2px 10px rgba(0,0,0,0.03)",
-                transition: "transform 0.15s ease",
-              }}
-            >
-              {/* Info Kiri */}
-              <div style={{ minWidth: 0, flex: 1 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 4 }}>
-                  <span
+
+        {isLoading ? (
+          <div style={{ display: "flex", justifyContent: "center", padding: "40px 0" }}>
+            <Loader2 className="animate-spin" size={28} style={{ color: "var(--accent-orange)" }} />
+          </div>
+        ) : filteredCategories.length === 0 ? (
+          <div style={{ textAlign: "center", padding: "40px 16px", color: "var(--admin-text-muted)" }}>
+            <Layers size={32} style={{ margin: "0 auto 8px", opacity: 0.5 }} />
+            <p style={{ fontWeight: 700, fontSize: "0.85rem", color: "var(--admin-text)" }}>Tidak ada kategori ditemukan</p>
+            <p style={{ fontSize: "0.75rem", marginTop: 2 }}>{searchQuery ? "Coba kata kunci pencarian lain." : "Klik Tambah Kategori untuk membuat kategori baru."}</p>
+          </div>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {filteredCategories.map((cat) => (
+              <div
+                key={cat.id}
+                style={{
+                  background: "var(--admin-surface-2)",
+                  border: `1px solid ${cat.is_active ? "var(--admin-border)" : "rgba(239,68,68,0.25)"}`,
+                  borderRadius: 14,
+                  padding: "12px 14px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: 12,
+                  opacity: cat.is_active ? 1 : 0.75,
+                  transition: "all 0.2s",
+                }}
+              >
+                {/* Info Kiri */}
+                <div style={{ minWidth: 0, flex: 1 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginBottom: 3 }}>
+                    <span
+                      style={{
+                        background: cat.is_active ? "rgba(16,185,129,0.12)" : "rgba(156,163,175,0.15)",
+                        color: cat.is_active ? "#10b981" : "var(--admin-text-muted)",
+                        fontSize: "0.62rem",
+                        fontWeight: 800,
+                        padding: "2px 7px",
+                        borderRadius: 999,
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 3,
+                      }}
+                    >
+                      {cat.is_active ? <CheckCircle2 size={10} /> : <XCircle size={10} />}
+                      {cat.is_active ? "Aktif" : "Nonaktif"}
+                    </span>
+                    <span
+                      style={{
+                        background: "var(--admin-card-bg)",
+                        color: "var(--admin-text-muted)",
+                        border: "1px solid var(--admin-border)",
+                        fontSize: "0.62rem",
+                        fontWeight: 700,
+                        padding: "2px 6px",
+                        borderRadius: 6,
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 3,
+                      }}
+                    >
+                      <ArrowUpDown size={9} /> #{cat.display_order}
+                    </span>
+                    <span
+                      style={{
+                        background: "rgba(249,115,22,0.12)",
+                        color: "#f97316",
+                        fontSize: "0.62rem",
+                        fontWeight: 700,
+                        padding: "2px 6px",
+                        borderRadius: 6,
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 3,
+                      }}
+                    >
+                      <Utensils size={9} /> {cat.total_menus || 0} Menu
+                    </span>
+                  </div>
+
+                  <div style={{ fontWeight: 800, fontSize: "0.9rem", color: "var(--admin-text)" }}>
+                    {cat.name}
+                  </div>
+                  <div style={{ fontSize: "0.7rem", color: "var(--admin-text-muted)", marginTop: 2, display: "flex", alignItems: "center", gap: 4 }}>
+                    <Hash size={11} /> slug: <code style={{ color: "var(--accent-orange)", fontWeight: 600 }}>{cat.slug}</code>
+                  </div>
+                </div>
+
+                {/* Aksi Kanan */}
+                <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+                  {/* Switch Aktif / Nonaktif */}
+                  <button
+                    onClick={() => handleToggleActive(cat.id, cat.is_active)}
+                    title={cat.is_active ? "Nonaktifkan kategori" : "Aktifkan kategori"}
                     style={{
-                      background: cat.is_active ? "rgba(16,185,129,0.12)" : "rgba(156,163,175,0.15)",
-                      color: cat.is_active ? "#10b981" : "var(--admin-text-muted)",
-                      fontSize: "0.65rem",
-                      fontWeight: 800,
-                      padding: "3px 8px",
+                      width: 42,
+                      height: 24,
                       borderRadius: 999,
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: 4,
+                      background: cat.is_active ? "#10b981" : "rgba(156,163,175,0.25)",
+                      border: "1px solid var(--admin-border)",
+                      cursor: "pointer",
+                      position: "relative",
+                      transition: "background 0.2s",
+                      padding: 2,
                     }}
                   >
-                    {cat.is_active ? <CheckCircle2 size={11} /> : <XCircle size={11} />}
-                    {cat.is_active ? "Aktif" : "Nonaktif"}
-                  </span>
-                  <span
-                    style={{
-                      background: "var(--admin-surface-2)",
-                      color: "var(--admin-text-muted)",
-                      fontSize: "0.65rem",
-                      fontWeight: 700,
-                      padding: "3px 8px",
-                      borderRadius: 8,
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: 3,
-                    }}
-                  >
-                    <ArrowUpDown size={10} /> Urutan #{cat.display_order}
-                  </span>
-                  <span
-                    style={{
-                      background: "rgba(249,115,22,0.12)",
-                      color: "#f97316",
-                      fontSize: "0.65rem",
-                      fontWeight: 700,
-                      padding: "3px 8px",
-                      borderRadius: 8,
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: 3,
-                    }}
-                  >
-                    <Utensils size={10} /> {cat.total_menus || 0} Menu
-                  </span>
-                </div>
+                    <div
+                      style={{
+                        width: 18,
+                        height: 18,
+                        borderRadius: "50%",
+                        background: "#fff",
+                        transform: cat.is_active ? "translateX(18px)" : "translateX(0px)",
+                        transition: "transform 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+                        boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
+                      }}
+                    />
+                  </button>
 
-                <div style={{ fontWeight: 800, fontSize: "0.95rem", color: "var(--admin-text)" }}>
-                  {cat.name}
-                </div>
-                <div style={{ fontSize: "0.72rem", color: "var(--admin-text-muted)", marginTop: 2, display: "flex", alignItems: "center", gap: 4 }}>
-                  <Hash size={12} /> slug: <code style={{ color: "var(--accent-orange)", fontWeight: 600 }}>{cat.slug}</code>
+                  {/* Edit Button */}
+                  <button
+                    onClick={() => handleOpenEdit(cat)}
+                    style={{
+                      width: 32,
+                      height: 32,
+                      borderRadius: 10,
+                      border: "1px solid var(--admin-border)",
+                      background: "var(--admin-card-bg)",
+                      color: "var(--admin-text)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      cursor: "pointer",
+                    }}
+                    title="Ubah Kategori"
+                  >
+                    <Edit3 size={14} />
+                  </button>
+
+                  {/* Delete Button */}
+                  <button
+                    onClick={() => setDeleteConfirmId(cat.id)}
+                    style={{
+                      width: 32,
+                      height: 32,
+                      borderRadius: 10,
+                      border: "1px solid rgba(239,68,68,0.2)",
+                      background: "rgba(239,68,68,0.08)",
+                      color: "#ef4444",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      cursor: "pointer",
+                    }}
+                    title="Hapus Kategori"
+                  >
+                    <Trash2 size={14} />
+                  </button>
                 </div>
               </div>
-
-              {/* Aksi Kanan */}
-              <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
-                {/* Switch Aktif / Nonaktif */}
-                <button
-                  onClick={() => handleToggleActive(cat.id, cat.is_active)}
-                  title={cat.is_active ? "Nonaktifkan kategori" : "Aktifkan kategori"}
-                  style={{
-                    width: 44,
-                    height: 24,
-                    borderRadius: 999,
-                    background: cat.is_active ? "#10b981" : "var(--admin-surface-2)",
-                    border: "1px solid var(--admin-border)",
-                    cursor: "pointer",
-                    position: "relative",
-                    transition: "background 0.2s",
-                    padding: 2,
-                  }}
-                >
-                  <div
-                    style={{
-                      width: 18,
-                      height: 18,
-                      borderRadius: "50%",
-                      background: "#fff",
-                      transform: cat.is_active ? "translateX(20px)" : "translateX(0px)",
-                      transition: "transform 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
-                      boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
-                    }}
-                  />
-                </button>
-
-                {/* Edit Button */}
-                <button
-                  onClick={() => handleOpenEdit(cat)}
-                  style={{
-                    width: 34,
-                    height: 34,
-                    borderRadius: 10,
-                    border: "1px solid var(--admin-border)",
-                    background: "var(--admin-surface-2)",
-                    color: "var(--admin-text)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    cursor: "pointer",
-                  }}
-                  title="Ubah Kategori"
-                >
-                  <Edit3 size={15} />
-                </button>
-
-                {/* Delete Button */}
-                <button
-                  onClick={() => setDeleteConfirmId(cat.id)}
-                  style={{
-                    width: 34,
-                    height: 34,
-                    borderRadius: 10,
-                    border: "1px solid rgba(239,68,68,0.2)",
-                    background: "rgba(239,68,68,0.08)",
-                    color: "#ef4444",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    cursor: "pointer",
-                  }}
-                  title="Hapus Kategori"
-                >
-                  <Trash2 size={15} />
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* Floating Action Button (FAB) */}
       <button

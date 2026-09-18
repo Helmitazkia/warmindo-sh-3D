@@ -1,16 +1,16 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { 
-  Plus, 
-  Search, 
-  QrCode, 
-  Edit3, 
-  Trash2, 
-  Users, 
-  CheckCircle2, 
-  AlertCircle, 
-  Loader2, 
+import {
+  Plus,
+  Search,
+  QrCode,
+  Edit3,
+  Trash2,
+  Users,
+  CheckCircle2,
+  AlertCircle,
+  Loader2,
   ExternalLink,
   Copy,
   Printer,
@@ -213,64 +213,57 @@ export default function MasterTablesPage() {
         </div>
       )}
 
-      {/* Header Info */}
-      <div style={{ marginBottom: 16 }}>
-        <h1 style={{ fontSize: "1.25rem", fontWeight: 900, color: "var(--admin-text)", letterSpacing: "-0.02em" }}>
-          🪑 Master Meja & QR
-        </h1>
-        <p style={{ fontSize: "0.78rem", color: "var(--admin-text-muted)", marginTop: 2 }}>
-          Kelola nomor meja, kapasitas kursi, status keterisian, dan cetak QR Code pesanan pelanggan.
+      {/* Summary Banner */}
+      <div
+        style={{
+          background: "linear-gradient(135deg, #059669, #10b981)",
+          borderRadius: 20,
+          padding: "18px 20px",
+          marginBottom: 16,
+          color: "#fff",
+          boxShadow: "0 8px 24px rgba(5,150,105,0.22)",
+        }}
+      >
+        <p style={{ fontSize: "0.75rem", fontWeight: 600, opacity: 0.85, marginBottom: 4 }}>
+          Master Meja & QR Code
         </p>
-      </div>
-
-      {/* KPI Stats */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8, marginBottom: 16 }}>
-        <div 
-          onClick={() => setStatusFilter("ALL")}
-          style={{ 
-            background: statusFilter === "ALL" ? "var(--admin-pill-bg)" : "var(--admin-card-bg)", 
-            border: `1px solid ${statusFilter === "ALL" ? "var(--accent-orange)" : "var(--admin-border)"}`, 
-            borderRadius: 14, padding: "10px 6px", textAlign: "center", cursor: "pointer", transition: "all 0.2s" 
-          }}
-        >
-          <div style={{ fontSize: "0.65rem", color: "var(--admin-text-muted)", fontWeight: 700 }}>Total</div>
-          <div style={{ fontSize: "1.15rem", fontWeight: 900, color: "var(--admin-text)", marginTop: 1 }}>{tables.length}</div>
-        </div>
-
-        <div 
-          onClick={() => setStatusFilter("AVAILABLE")}
-          style={{ 
-            background: statusFilter === "AVAILABLE" ? "rgba(16,185,129,0.15)" : "var(--admin-card-bg)", 
-            border: `1px solid ${statusFilter === "AVAILABLE" ? "#10b981" : "var(--admin-border)"}`, 
-            borderRadius: 14, padding: "10px 6px", textAlign: "center", cursor: "pointer", transition: "all 0.2s" 
-          }}
-        >
-          <div style={{ fontSize: "0.65rem", color: "#10b981", fontWeight: 700 }}>Tersedia</div>
-          <div style={{ fontSize: "1.15rem", fontWeight: 900, color: "#10b981", marginTop: 1 }}>{countAvailable}</div>
-        </div>
-
-        <div 
-          onClick={() => setStatusFilter("OCCUPIED")}
-          style={{ 
-            background: statusFilter === "OCCUPIED" ? "rgba(239,68,68,0.15)" : "var(--admin-card-bg)", 
-            border: `1px solid ${statusFilter === "OCCUPIED" ? "#ef4444" : "var(--admin-border)"}`, 
-            borderRadius: 14, padding: "10px 6px", textAlign: "center", cursor: "pointer", transition: "all 0.2s" 
-          }}
-        >
-          <div style={{ fontSize: "0.65rem", color: "#ef4444", fontWeight: 700 }}>Terisi</div>
-          <div style={{ fontSize: "1.15rem", fontWeight: 900, color: "#ef4444", marginTop: 1 }}>{countOccupied}</div>
-        </div>
-
-        <div 
-          onClick={() => setStatusFilter("RESERVED")}
-          style={{ 
-            background: statusFilter === "RESERVED" ? "rgba(245,158,11,0.15)" : "var(--admin-card-bg)", 
-            border: `1px solid ${statusFilter === "RESERVED" ? "#f59e0b" : "var(--admin-border)"}`, 
-            borderRadius: 14, padding: "10px 6px", textAlign: "center", cursor: "pointer", transition: "all 0.2s" 
-          }}
-        >
-          <div style={{ fontSize: "0.65rem", color: "#f59e0b", fontWeight: 700 }}>Booking</div>
-          <div style={{ fontSize: "1.15rem", fontWeight: 900, color: "#f59e0b", marginTop: 1 }}>{countReserved}</div>
+        <p suppressHydrationWarning style={{ fontSize: "1.8rem", fontWeight: 900, fontVariantNumeric: "tabular-nums", marginBottom: 12 }}>
+          {countAvailable} Meja Tersedia
+        </p>
+        <div style={{ display: "flex", gap: 8 }}>
+          {[
+            { id: "ALL", label: "Total", value: tables.length },
+            { id: "AVAILABLE", label: "Tersedia", value: countAvailable },
+            { id: "OCCUPIED", label: "Terisi", value: countOccupied, highlight: countOccupied > 0 },
+            { id: "RESERVED", label: "Booking", value: countReserved, highlight: countReserved > 0 },
+          ].map((stat) => {
+            const isActive = statusFilter === stat.id;
+            return (
+              <div
+                key={stat.id}
+                onClick={() => setStatusFilter(stat.id)}
+                style={{
+                  flex: 1,
+                  background: isActive ? "rgba(255,255,255,0.38)" : "rgba(255,255,255,0.18)",
+                  border: isActive ? "1.5px solid rgba(255,255,255,0.85)" : "1px solid rgba(255,255,255,0.15)",
+                  borderRadius: 12,
+                  padding: "8px 4px",
+                  textAlign: "center",
+                  cursor: "pointer",
+                  transition: "all 0.15s ease",
+                  transform: isActive ? "translateY(-1px)" : "none",
+                  boxShadow: isActive ? "0 4px 12px rgba(0,0,0,0.12)" : "none",
+                }}
+              >
+                <div style={{ fontSize: "0.6rem", fontWeight: 700, opacity: isActive ? 1 : 0.85, marginBottom: 2 }}>
+                  {stat.label}
+                </div>
+                <div style={{ fontSize: "1.2rem", fontWeight: 900, color: stat.highlight ? "#fef08a" : "#fff" }}>
+                  {stat.value}
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
 
@@ -304,161 +297,186 @@ export default function MasterTablesPage() {
         />
       </div>
 
-      {/* List Tables */}
-      {isLoading ? (
-        <div style={{ display: "flex", justifyContent: "center", padding: "60px 0" }}>
-          <Loader2 className="animate-spin" size={30} style={{ color: "var(--accent-orange)" }} />
+      {/* Table Card Container */}
+      <div
+        style={{
+          background: "var(--admin-card-bg)",
+          border: "1px solid var(--admin-card-border)",
+          borderRadius: 18,
+          padding: 16,
+          marginBottom: 80,
+          overflow: "hidden",
+          boxSizing: "border-box",
+        }}
+      >
+        {/* Card Header like Kelola Produk */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8, marginBottom: 14 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
+            <p style={{ fontWeight: 800, fontSize: "0.875rem", color: "var(--admin-text)", display: "flex", alignItems: "center", gap: 6, margin: 0 }}>
+              <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#10b981", display: "inline-block", boxShadow: "0 0 6px #10b981", animation: "pulse 2s infinite", flexShrink: 0 }} />
+              Daftar Meja & QR
+            </p>
+            <span style={{ fontSize: "0.62rem", fontWeight: 700, color: "var(--admin-green)", background: "var(--admin-green-soft)", padding: "2px 8px", borderRadius: 999, border: "1px solid rgba(16,185,129,0.2)", flexShrink: 0 }}>
+              FLOOR PLAN
+            </span>
+          </div>
+          <span style={{ fontSize: "0.72rem", color: "var(--admin-text-sub)" }}>
+            {filteredTables.length} meja ditemukan
+          </span>
         </div>
-      ) : filteredTables.length === 0 ? (
-        <div style={{ textAlign: "center", padding: "50px 20px", background: "var(--admin-card-bg)", borderRadius: 18, border: "1px dashed var(--admin-border)" }}>
-          <Users size={36} style={{ color: "var(--admin-text-muted)", margin: "0 auto 10px" }} />
-          <p style={{ fontWeight: 700, fontSize: "0.9rem", color: "var(--admin-text)" }}>Tidak ada meja ditemukan</p>
-          <p style={{ fontSize: "0.75rem", color: "var(--admin-text-muted)", marginTop: 4 }}>
-            {searchQuery ? "Coba kata kunci pencarian lain." : "Klik tombol '+ Tambah Meja' untuk menambahkan meja baru."}
-          </p>
-        </div>
-      ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 12, paddingBottom: 80 }}>
-          {filteredTables.map((t) => {
-            const statusConfig = {
-              AVAILABLE: { label: "Tersedia", color: "#10b981", bg: "rgba(16,185,129,0.12)" },
-              OCCUPIED: { label: "Terisi Tamu", color: "#ef4444", bg: "rgba(239,68,68,0.12)" },
-              RESERVED: { label: "Dipesan", color: "#f59e0b", bg: "rgba(245,158,11,0.12)" },
-            }[t.status] || { label: t.status, color: "#9ca3af", bg: "rgba(156,163,175,0.12)" };
 
-            return (
-              <div
-                key={t.id}
-                style={{
-                  background: "var(--admin-card-bg)",
-                  border: "1px solid var(--admin-border)",
-                  borderRadius: 18,
-                  padding: 16,
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "space-between",
-                  gap: 12,
-                  boxShadow: "0 2px 10px rgba(0,0,0,0.03)",
-                }}
-              >
-                {/* Atas: Nomor Meja & Status Badge */}
-                <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8 }}>
-                  <div>
-                    <div style={{ fontWeight: 900, fontSize: "1.1rem", color: "var(--admin-text)" }}>
-                      {t.table_number}
+        {isLoading ? (
+          <div style={{ display: "flex", justifyContent: "center", padding: "40px 0" }}>
+            <Loader2 className="animate-spin" size={28} style={{ color: "var(--accent-orange)" }} />
+          </div>
+        ) : filteredTables.length === 0 ? (
+          <div style={{ textAlign: "center", padding: "40px 16px", color: "var(--admin-text-muted)" }}>
+            <Users size={32} style={{ margin: "0 auto 8px", opacity: 0.5 }} />
+            <p style={{ fontWeight: 700, fontSize: "0.85rem", color: "var(--admin-text)" }}>Tidak ada meja ditemukan</p>
+            <p style={{ fontSize: "0.75rem", marginTop: 2 }}>{searchQuery ? "Coba kata kunci pencarian lain." : "Klik Tambah Meja untuk menambahkan meja baru."}</p>
+          </div>
+        ) : (
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 10 }}>
+            {filteredTables.map((t) => {
+              const statusConfig = {
+                AVAILABLE: { label: "Tersedia", color: "#10b981", bg: "rgba(16,185,129,0.12)" },
+                OCCUPIED: { label: "Terisi Tamu", color: "#ef4444", bg: "rgba(239,68,68,0.12)" },
+                RESERVED: { label: "Dipesan", color: "#f59e0b", bg: "rgba(245,158,11,0.12)" },
+              }[t.status] || { label: t.status, color: "#9ca3af", bg: "rgba(156,163,175,0.12)" };
+
+              return (
+                <div
+                  key={t.id}
+                  style={{
+                    background: "var(--admin-surface-2)",
+                    border: "1px solid var(--admin-border)",
+                    borderRadius: 14,
+                    padding: 14,
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "space-between",
+                    gap: 10,
+                  }}
+                >
+                  {/* Atas: Nomor Meja & Status Badge */}
+                  <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8 }}>
+                    <div>
+                      <div style={{ fontWeight: 900, fontSize: "1.05rem", color: "var(--admin-text)" }}>
+                        {t.table_number}
+                      </div>
+                      <div style={{ fontSize: "0.7rem", color: "var(--admin-text-muted)", marginTop: 2, display: "flex", alignItems: "center", gap: 4 }}>
+                        <Users size={11} /> Kapasitas: <strong>{t.capacity} Kursi</strong>
+                      </div>
                     </div>
-                    <div style={{ fontSize: "0.72rem", color: "var(--admin-text-muted)", marginTop: 2, display: "flex", alignItems: "center", gap: 4 }}>
-                      <Users size={12} /> Kapasitas: <strong>{t.capacity} Kursi</strong>
+
+                    <select
+                      value={t.status}
+                      onChange={(e) => handleStatusChangeQuick(t.id, e.target.value)}
+                      style={{
+                        background: statusConfig.bg,
+                        color: statusConfig.color,
+                        border: `1px solid ${statusConfig.color}40`,
+                        borderRadius: 8,
+                        padding: "3px 6px",
+                        fontSize: "0.68rem",
+                        fontWeight: 800,
+                        cursor: "pointer",
+                        outline: "none",
+                      }}
+                    >
+                      <option value="AVAILABLE">🟢 Tersedia</option>
+                      <option value="OCCUPIED">🔴 Terisi</option>
+                      <option value="RESERVED">🟡 Booking</option>
+                    </select>
+                  </div>
+
+                  {/* Tengah: Statistik Okupansi & Pesanan */}
+                  <div style={{ display: "flex", gap: 8, background: "var(--admin-card-bg)", padding: "7px 10px", borderRadius: 10, border: "1px solid var(--admin-border)" }}>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: "0.62rem", color: "var(--admin-text-muted)" }}>Tamu Aktif</div>
+                      <div style={{ fontSize: "0.82rem", fontWeight: 800, color: "var(--admin-text)" }}>
+                        {t.occupied_guests} <span style={{ fontSize: "0.65rem", fontWeight: 600, color: "var(--admin-text-muted)" }}>/ {t.capacity}</span>
+                      </div>
+                    </div>
+                    <div style={{ width: 1, background: "var(--admin-border)" }} />
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: "0.62rem", color: "var(--admin-text-muted)" }}>Pesanan Berjalan</div>
+                      <div style={{ fontSize: "0.82rem", fontWeight: 800, color: t.active_orders_count > 0 ? "#f97316" : "var(--admin-text)" }}>
+                        {t.active_orders_count > 0 ? `🔥 ${t.active_orders_count} Pesanan` : "Nihil"}
+                      </div>
                     </div>
                   </div>
 
-                  <select
-                    value={t.status}
-                    onChange={(e) => handleStatusChangeQuick(t.id, e.target.value)}
-                    style={{
-                      background: statusConfig.bg,
-                      color: statusConfig.color,
-                      border: `1px solid ${statusConfig.color}40`,
-                      borderRadius: 10,
-                      padding: "4px 8px",
-                      fontSize: "0.7rem",
-                      fontWeight: 800,
-                      cursor: "pointer",
-                      outline: "none",
-                    }}
-                  >
-                    <option value="AVAILABLE">🟢 Tersedia</option>
-                    <option value="OCCUPIED">🔴 Terisi</option>
-                    <option value="RESERVED">🟡 Booking</option>
-                  </select>
-                </div>
+                  {/* Bawah: Tombol Aksi */}
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, paddingTop: 2 }}>
+                    {/* Tombol QR Code */}
+                    <button
+                      onClick={() => setQrModalTable(t)}
+                      style={{
+                        flex: 1,
+                        padding: "7px 10px",
+                        borderRadius: 8,
+                        border: "1px solid var(--admin-border)",
+                        background: "rgba(249,115,22,0.1)",
+                        color: "#f97316",
+                        fontWeight: 700,
+                        fontSize: "0.72rem",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: 5,
+                        cursor: "pointer",
+                      }}
+                    >
+                      <QrCode size={13} /> Cetak QR
+                    </button>
 
-                {/* Tengah: Statistik Okupansi & Pesanan */}
-                <div style={{ display: "flex", gap: 8, background: "var(--admin-surface-2)", padding: "8px 12px", borderRadius: 12 }}>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: "0.65rem", color: "var(--admin-text-muted)" }}>Tamu Aktif</div>
-                    <div style={{ fontSize: "0.85rem", fontWeight: 800, color: "var(--admin-text)" }}>
-                      {t.occupied_guests} <span style={{ fontSize: "0.68rem", fontWeight: 600, color: "var(--admin-text-muted)" }}>/ {t.capacity}</span>
-                    </div>
+                    {/* Tombol Edit */}
+                    <button
+                      onClick={() => handleOpenEdit(t)}
+                      style={{
+                        width: 32,
+                        height: 32,
+                        borderRadius: 8,
+                        border: "1px solid var(--admin-border)",
+                        background: "var(--admin-card-bg)",
+                        color: "var(--admin-text)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        cursor: "pointer",
+                      }}
+                      title="Ubah Meja"
+                    >
+                      <Edit3 size={13} />
+                    </button>
+
+                    {/* Tombol Hapus */}
+                    <button
+                      onClick={() => setDeleteConfirmId(t.id)}
+                      style={{
+                        width: 32,
+                        height: 32,
+                        borderRadius: 8,
+                        border: "1px solid rgba(239,68,68,0.2)",
+                        background: "rgba(239,68,68,0.08)",
+                        color: "#ef4444",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        cursor: "pointer",
+                      }}
+                      title="Hapus Meja"
+                    >
+                      <Trash2 size={13} />
+                    </button>
                   </div>
-                  <div style={{ width: 1, background: "var(--admin-border)" }} />
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: "0.65rem", color: "var(--admin-text-muted)" }}>Pesanan Berjalan</div>
-                    <div style={{ fontSize: "0.85rem", fontWeight: 800, color: t.active_orders_count > 0 ? "#f97316" : "var(--admin-text)" }}>
-                      {t.active_orders_count > 0 ? `🔥 ${t.active_orders_count} Pesanan` : "Nihil"}
-                    </div>
-                  </div>
                 </div>
-
-                {/* Bawah: Tombol Aksi */}
-                <div style={{ display: "flex", alignItems: "center", gap: 8, paddingTop: 4 }}>
-                  {/* Tombol QR Code */}
-                  <button
-                    onClick={() => setQrModalTable(t)}
-                    style={{
-                      flex: 1,
-                      padding: "8px 10px",
-                      borderRadius: 10,
-                      border: "1px solid var(--admin-border)",
-                      background: "rgba(249,115,22,0.1)",
-                      color: "#f97316",
-                      fontWeight: 700,
-                      fontSize: "0.75rem",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      gap: 6,
-                      cursor: "pointer",
-                    }}
-                  >
-                    <QrCode size={14} /> Cetak QR
-                  </button>
-
-                  {/* Tombol Edit */}
-                  <button
-                    onClick={() => handleOpenEdit(t)}
-                    style={{
-                      width: 34,
-                      height: 34,
-                      borderRadius: 10,
-                      border: "1px solid var(--admin-border)",
-                      background: "var(--admin-surface-2)",
-                      color: "var(--admin-text)",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      cursor: "pointer",
-                    }}
-                    title="Ubah Meja"
-                  >
-                    <Edit3 size={14} />
-                  </button>
-
-                  {/* Tombol Hapus */}
-                  <button
-                    onClick={() => setDeleteConfirmId(t.id)}
-                    style={{
-                      width: 34,
-                      height: 34,
-                      borderRadius: 10,
-                      border: "1px solid rgba(239,68,68,0.2)",
-                      background: "rgba(239,68,68,0.08)",
-                      color: "#ef4444",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      cursor: "pointer",
-                    }}
-                    title="Hapus Meja"
-                  >
-                    <Trash2 size={14} />
-                  </button>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
+              );
+            })}
+          </div>
+        )}
+      </div>
 
       {/* FAB Tambah Meja */}
       <button
