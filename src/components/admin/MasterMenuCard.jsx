@@ -145,7 +145,7 @@ export default function MasterMenuCard({ menu, onToggleAvailable, onEdit }) {
           style={{
             fontWeight: 800,
             fontSize: "0.875rem",
-            background: "linear-gradient(135deg, #fbbf24, #f97316)",
+            backgroundImage: "linear-gradient(135deg, #fbbf24, #f97316)",
             WebkitBackgroundClip: "text",
             WebkitTextFillColor: "transparent",
             backgroundClip: "text",

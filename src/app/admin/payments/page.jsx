@@ -13,7 +13,7 @@ export default function MasterPaymentsPage() {
   };
 
   return (
-    <div style={{ maxWidth: 640, margin: "0 auto", padding: "16px", paddingBottom: "100px" }}>
+    <div>
       {/* Toast Notification */}
       {toast && (
         <div
