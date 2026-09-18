@@ -8,6 +8,13 @@ export default function MasterMenuCard({ menu, onToggleAvailable, onEdit }) {
   const isAvailable = !!menu.is_available;
   const imageUrl = menu.image_url || menu.image;
   const isRecommended = Boolean(menu.is_recommended || menu.isRecommended);
+  const toppingIds = menu.allow_toppings
+    ? String(menu.allow_toppings)
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean)
+    : [];
+  const hasToppings = toppingIds.length > 0;
 
   const handleToggle = async (e) => {
     e.stopPropagation();
@@ -111,14 +118,34 @@ export default function MasterMenuCard({ menu, onToggleAvailable, onEdit }) {
             {menu.name}
           </p>
         </div>
-        <p style={{ fontSize: "0.7rem", color: "var(--admin-text-muted)", marginBottom: 4 }}>
-          {menu.categoryName}
-        </p>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4, flexWrap: "wrap" }}>
+          <p style={{ fontSize: "0.7rem", color: "var(--admin-text-muted)" }}>
+            {menu.categoryName}
+          </p>
+          {hasToppings && (
+            <span
+              style={{
+                fontSize: "0.6rem",
+                fontWeight: 700,
+                color: "#f97316",
+                background: "rgba(249,115,22,0.12)",
+                padding: "1px 6px",
+                borderRadius: 5,
+                border: "1px solid rgba(249,115,22,0.25)",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 2,
+              }}
+            >
+              🍳 {toppingIds.length} Topping
+            </span>
+          )}
+        </div>
         <p
           style={{
             fontWeight: 800,
             fontSize: "0.875rem",
-            background: "linear-gradient(135deg, #fbbf24, #f97316)",
+            backgroundImage: "linear-gradient(135deg, #fbbf24, #f97316)",
             WebkitBackgroundClip: "text",
             WebkitTextFillColor: "transparent",
             backgroundClip: "text",

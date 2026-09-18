@@ -8,6 +8,7 @@ import OrderItemCard from "@/components/order/OrderItemCard";
 import CartFloatingBar from "@/components/order/CartFloatingBar";
 import CheckoutDrawer from "@/components/order/CheckoutDrawer";
 import OrderSuccessView from "@/components/order/OrderSuccessView";
+import MenuCustomizationModal from "@/components/order/MenuCustomizationModal";
 
 function OrderPageContent() {
   const searchParams = useSearchParams();
@@ -18,26 +19,31 @@ function OrderPageContent() {
   const [searchQuery, setSearchQuery] = useState("");
   const [cart, setCart] = useState({}); // { [itemId]: quantity }
   const [itemNotes, setItemNotes] = useState({}); // { [itemId]: noteString }
+  const [selectedToppings, setSelectedToppings] = useState({}); // { [itemId]: [ { id, name, price } ] }
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [completedOrder, setCompletedOrder] = useState(null);
+  const [customizingMenu, setCustomizingMenu] = useState(null);
 
   // Dynamic Data from MySQL
   const [categories, setCategories] = useState(defaultCategories);
   const [menuList, setMenuList] = useState(defaultMenus);
   const [tableList, setTableList] = useState(defaultTables);
+  const [toppingsList, setToppingsList] = useState([]);
   const [isLoadingData, setIsLoadingData] = useState(true);
 
   // Fetch Menus & Tables from Database on Mount
   useEffect(() => {
     async function loadData() {
       try {
-        const [menuRes, tableRes] = await Promise.all([
+        const [menuRes, tableRes, toppingRes] = await Promise.all([
           fetch("/api/menus"),
           fetch("/api/tables"),
+          fetch("/api/toppings"),
         ]);
 
         const menuJson = await menuRes.json();
         const tableJson = await tableRes.json();
+        const toppingJson = await toppingRes.json();
 
         if (menuJson.success && menuJson.data) {
           if (menuJson.data.categories?.length > 0) {
@@ -50,6 +56,10 @@ function OrderPageContent() {
 
         if (tableJson.success && tableJson.data?.length > 0) {
           setTableList(tableJson.data);
+        }
+
+        if (toppingJson.success && toppingJson.data?.length > 0) {
+          setToppingsList(toppingJson.data);
         }
       } catch (err) {
         console.warn("Using fallback local dataset:", err);
@@ -75,18 +85,30 @@ function OrderPageContent() {
     });
   }, [menuList, selectedCategory, searchQuery]);
 
-  // Cart Calculations
+  // Cart Calculations (includes toppings)
   const cartItems = useMemo(() => {
     return Object.keys(cart)
       .filter((id) => cart[id] > 0)
       .map((id) => {
         const item = menuList.find((m) => String(m.id) === String(id)) || defaultMenus.find((m) => String(m.id) === String(id));
+        const allowedToppingIds = Array.isArray(item?.allowToppingIds)
+          ? item.allowToppingIds
+          : item?.allow_toppings
+          ? String(item.allow_toppings).split(",").map(Number).filter(Boolean)
+          : [];
+        const allowsTopping = allowedToppingIds.length > 0;
+        const chosenToppings = allowsTopping ? (selectedToppings[id] || []) : [];
+        const toppingTotal = chosenToppings.reduce((sum, t) => sum + Number(t.price || 0), 0);
+        const finalUnitPrice = Number(item?.price || 0) + toppingTotal;
         return {
           ...item,
+          basePrice: Number(item?.price || 0),
+          price: finalUnitPrice,
+          toppings: chosenToppings,
           quantity: cart[id],
         };
       });
-  }, [cart, menuList]);
+  }, [cart, menuList, selectedToppings]);
 
   const totalCartCount = useMemo(() => {
     return Object.values(cart).reduce((sum, qty) => sum + qty, 0);
@@ -109,6 +131,27 @@ function OrderPageContent() {
   }, [tableList, tableNumber]);
 
   // Handlers
+  const handleOpenCustomization = (item) => {
+    setCustomizingMenu(item);
+  };
+
+  const handleConfirmCustomization = ({ menu, quantity, toppings, note }) => {
+    setCart((prev) => ({
+      ...prev,
+      [menu.id]: quantity,
+    }));
+    setSelectedToppings((prev) => ({
+      ...prev,
+      [menu.id]: toppings,
+    }));
+    if (note !== undefined) {
+      setItemNotes((prev) => ({
+        ...prev,
+        [menu.id]: note,
+      }));
+    }
+  };
+
   const handleAddToCart = (item) => {
     setCart((prev) => ({
       ...prev,
@@ -138,11 +181,26 @@ function OrderPageContent() {
     }));
   };
 
+  const handleToggleTopping = (itemId, topping) => {
+    setSelectedToppings((prev) => {
+      const current = prev[itemId] || [];
+      const exists = current.some((t) => t.id === topping.id);
+      const updated = exists
+        ? current.filter((t) => t.id !== topping.id)
+        : [...current, { id: topping.id, name: topping.name, price: Number(topping.price) || 0 }];
+      return {
+        ...prev,
+        [itemId]: updated,
+      };
+    });
+  };
+
   const handleSubmitOrder = (savedOrderData) => {
     setCompletedOrder(savedOrderData);
     setIsCheckoutOpen(false);
     setCart({});
     setItemNotes({});
+    setSelectedToppings({});
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -252,6 +310,10 @@ function OrderPageContent() {
                     onRemoveFromCart={handleRemoveFromCart}
                     itemNote={itemNotes[item.id]}
                     onUpdateNote={handleUpdateNote}
+                    availableToppings={toppingsList}
+                    selectedToppings={selectedToppings[item.id] || []}
+                    onToggleTopping={handleToggleTopping}
+                    onOpenCustomization={handleOpenCustomization}
                   />
                 ))}
               </div>
@@ -263,6 +325,18 @@ function OrderPageContent() {
             totalItems={totalCartCount}
             totalPrice={totalCartPrice}
             onOpenCart={() => setIsCheckoutOpen(true)}
+          />
+
+          {/* Modal Kustomisasi Menu & Topping Ala ShopeeFood */}
+          <MenuCustomizationModal
+            isOpen={!!customizingMenu}
+            onClose={() => setCustomizingMenu(null)}
+            menu={customizingMenu}
+            availableToppings={toppingsList}
+            initialSelectedToppings={customizingMenu ? selectedToppings[customizingMenu.id] || [] : []}
+            initialNote={customizingMenu ? itemNotes[customizingMenu.id] || "" : ""}
+            initialQty={customizingMenu ? cart[customizingMenu.id] || 1 : 1}
+            onConfirm={handleConfirmCustomization}
           />
 
           {/* Checkout Bottom Sheet */}

@@ -1,9 +1,9 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
-import { paymentMethods } from "@/data/menuData";
+import { paymentMethods as defaultPaymentMethods } from "@/data/menuData";
 
 export default function CheckoutDrawer({
   isOpen,
@@ -20,11 +20,30 @@ export default function CheckoutDrawer({
   const [customerPhone, setCustomerPhone] = useState("");
   const [guestCount, setGuestCount] = useState(1);
   const [tableNotes, setTableNotes] = useState("");
+  const [paymentMethodList, setPaymentMethodList] = useState(defaultPaymentMethods);
   const [selectedPayment, setSelectedPayment] = useState("CASH");
   const [paymentProofFile, setPaymentProofFile] = useState(null);
   const [paymentProofPreview, setPaymentProofPreview] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+
+  useEffect(() => {
+    async function fetchPayments() {
+      try {
+        const res = await fetch("/api/payment-methods");
+        const json = await res.json();
+        if (json.success && json.data && json.data.length > 0) {
+          setPaymentMethodList(json.data);
+          // Default selection to first active method if CASH not present
+          const hasCash = json.data.some((p) => p.code === "CASH");
+          setSelectedPayment(hasCash ? "CASH" : json.data[0].code);
+        }
+      } catch (err) {
+        console.warn("Using fallback payment methods:", err);
+      }
+    }
+    fetchPayments();
+  }, []);
 
   const formatIDR = (num) => {
     return new Intl.NumberFormat("id-ID", {
@@ -85,16 +104,17 @@ export default function CheckoutDrawer({
       return;
     }
 
-    if ((selectedPayment === "QRIS" || selectedPayment === "TRANSFER") && !paymentProofFile) {
+    const isCashPayment = selectedPayment === "CASH";
+    if (!isCashPayment && !paymentProofFile) {
       setErrorMsg("Mohon upload bukti transfer / screenshot pembayaran QRIS.");
       return;
     }
 
     setIsSubmitting(true);
 
-    // Upload payment proof file terlebih dahulu (jika ada)
+    // Upload payment proof file terlebih dahulu (jika non-cash)
     let uploadedProofUrl = null;
-    if (paymentProofFile && (selectedPayment === "QRIS" || selectedPayment === "TRANSFER")) {
+    if (paymentProofFile && !isCashPayment) {
       try {
         const uploadForm = new FormData();
         uploadForm.append("file", paymentProofFile);
@@ -127,6 +147,7 @@ export default function CheckoutDrawer({
         name: item.name,
         price: item.price,
         qty: item.quantity,
+        toppings: item.toppings || [],
         notes: itemNotes[item.id] || "",
         subtotal: item.price * item.quantity,
       })),
@@ -284,6 +305,26 @@ export default function CheckoutDrawer({
                         <div style={{ fontWeight: 700, fontSize: "0.9rem", color: "var(--text-primary)" }}>
                           {item.name}
                         </div>
+                        {item.toppings && item.toppings.length > 0 && (
+                          <div style={{ display: "flex", flexWrap: "wrap", gap: 4, margin: "3px 0" }}>
+                            {item.toppings.map((t, idx) => (
+                              <span
+                                key={idx}
+                                style={{
+                                  fontSize: "0.68rem",
+                                  color: "#f97316",
+                                  background: "rgba(249,115,22,0.12)",
+                                  border: "1px solid rgba(249,115,22,0.25)",
+                                  borderRadius: 4,
+                                  padding: "1px 5px",
+                                  fontWeight: 600,
+                                }}
+                              >
+                                +{t.name} ({formatIDR(t.price)})
+                              </span>
+                            ))}
+                          </div>
+                        )}
                         <div style={{ fontSize: "0.8rem", color: "#f97316", fontWeight: 700 }}>
                           {formatIDR(item.price)}
                         </div>
@@ -448,18 +489,22 @@ export default function CheckoutDrawer({
                 </div>
               </div>
 
-              {/* Payment Method Selector */}
+              {/* Payment Method Selector (Dinamis dari Database) */}
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 <h3 style={{ fontSize: "0.85rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" }}>
                   💳 Metode Pembayaran
                 </h3>
 
-                {paymentMethods.map((pm) => {
-                  const isSelected = selectedPayment === pm.id;
+                {paymentMethodList.map((pm) => {
+                  const methodCode = pm.code || pm.id;
+                  const isSelected = selectedPayment === methodCode;
+                  const isCash = methodCode === "CASH";
+                  const methodIcon = isCash ? "💵" : (methodCode === "QRIS" ? "📱" : "🏦");
+
                   return (
                     <div
-                      key={pm.id}
-                      onClick={() => setSelectedPayment(pm.id)}
+                      key={pm.id || methodCode}
+                      onClick={() => setSelectedPayment(methodCode)}
                       style={{
                         padding: "14px",
                         borderRadius: 14,
@@ -471,13 +516,13 @@ export default function CheckoutDrawer({
                     >
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                          <span style={{ fontSize: "1.3rem" }}>{pm.icon}</span>
+                          <span style={{ fontSize: "1.3rem" }}>{pm.icon || methodIcon}</span>
                           <div>
                             <div style={{ fontWeight: 700, fontSize: "0.9rem", color: "var(--text-primary)" }}>
                               {pm.name}
                             </div>
                             <div style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>
-                              {pm.description}
+                              {pm.description || (isCash ? "Bayar langsung ke kasir saat makanan datang" : `Transfer / scan melalui ${pm.name}`)}
                             </div>
                           </div>
                         </div>
@@ -485,13 +530,13 @@ export default function CheckoutDrawer({
                           type="radio"
                           name="paymentMethod"
                           checked={isSelected}
-                          onChange={() => setSelectedPayment(pm.id)}
+                          onChange={() => setSelectedPayment(methodCode)}
                           style={{ accentColor: "#f97316" }}
                         />
                       </div>
 
                       {/* QRIS / Transfer Box */}
-                      {isSelected && (pm.id === "QRIS" || pm.id === "TRANSFER") && (
+                      {isSelected && !isCash && (
                         <motion.div
                           initial={{ opacity: 0, height: 0 }}
                           animate={{ opacity: 1, height: "auto" }}
@@ -505,19 +550,23 @@ export default function CheckoutDrawer({
                           }}
                         >
                           <div style={{ textAlign: "center", background: "#ffffff", padding: 14, borderRadius: 14 }}>
-                            <div style={{ color: "#000", fontWeight: 800, fontSize: "0.9rem", marginBottom: 6 }}>
-                              {pm.accountName}
-                            </div>
-                            <Image
-                              src="/asset/Diorama_3D_bergaya_Cute___Cozy.png"
-                              alt="QRIS Warmindo SH"
-                              width={180}
-                              height={180}
-                              style={{ margin: "0 auto", borderRadius: 8 }}
-                            />
-                            <div style={{ color: "#4b5563", fontSize: "0.75rem", marginTop: 6 }}>
-                              {pm.accountNumber}
-                            </div>
+                            {(pm.accountName || pm.account_name) && (
+                              <div style={{ color: "#000", fontWeight: 800, fontSize: "0.9rem", marginBottom: 6 }}>
+                                {pm.accountName || pm.account_name}
+                              </div>
+                            )}
+                            {(pm.qrImageUrl || pm.qr_image_url || pm.qrImage) && (
+                              <img
+                                src={pm.qrImageUrl || pm.qr_image_url || pm.qrImage}
+                                alt={pm.name}
+                                style={{ margin: "0 auto", borderRadius: 8, maxHeight: 180, maxWidth: "100%", objectFit: "contain", display: "block" }}
+                              />
+                            )}
+                            {(pm.accountNumber || pm.account_number) && (
+                              <div style={{ color: "#4b5563", fontSize: "0.75rem", marginTop: 6, fontWeight: 600 }}>
+                                {pm.accountNumber || pm.account_number}
+                              </div>
+                            )}
                             <div style={{ color: "#ea580c", fontWeight: 800, fontSize: "1.1rem", marginTop: 4 }}>
                               Total: {formatIDR(totalPrice)}
                             </div>
@@ -525,7 +574,7 @@ export default function CheckoutDrawer({
 
                           <div>
                             <label style={{ fontSize: "0.78rem", fontWeight: 700, color: "var(--text-primary)", display: "block", marginBottom: 6 }}>
-                              📤 Upload Bukti Transfer / Screenshot QRIS *
+                              📤 Upload Bukti Transfer / Screenshot Pembayaran *
                             </label>
                             <input
                               type="file"
@@ -546,12 +595,10 @@ export default function CheckoutDrawer({
                                 <div style={{ fontSize: "0.75rem", color: "#34d399", display: "flex", alignItems: "center", gap: 4 }}>
                                   <span>✅ Bukti pembayaran terpilih</span>
                                 </div>
-                                <Image
+                                <img
                                   src={paymentProofPreview}
                                   alt="Bukti Pembayaran"
-                                  width={100}
-                                  height={150}
-                                  style={{ objectFit: "cover", borderRadius: 8, border: "1px solid var(--border-glass)" }}
+                                  style={{ width: 100, height: 140, objectFit: "cover", borderRadius: 8, border: "1px solid var(--border-glass)" }}
                                 />
                               </div>
                             )}

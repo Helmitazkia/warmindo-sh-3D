@@ -42,7 +42,7 @@ async function safeDeleteOldAsset(oldUrl, currentMenuId) {
 export async function GET() {
   try {
     const menus = await query(
-      `SELECT m.id, m.name, m.price, m.description, m.image_url, m.is_recommended, m.is_available, m.category_id, c.name as categoryName
+      `SELECT m.id, m.name, m.price, m.description, m.image_url, m.is_recommended, m.allow_toppings, m.is_available, m.category_id, c.name as categoryName
        FROM menus m
        JOIN categories c ON m.category_id = c.id
        ORDER BY c.display_order ASC, m.name ASC`
@@ -59,16 +59,20 @@ export async function GET() {
 export async function POST(request) {
   try {
     const body = await request.json();
-    const { name, category_id, price, description, is_recommended, image_url } = body;
+    const { name, category_id, price, description, is_recommended, allow_toppings = null, image_url } = body;
     
     if (!name || !category_id || !price) {
       return NextResponse.json({ success: false, message: "Missing required fields" }, { status: 400 });
     }
 
+    const cleanAllowToppings = allow_toppings && typeof allow_toppings === "string" && allow_toppings.trim() !== ""
+      ? allow_toppings.trim()
+      : (Array.isArray(allow_toppings) && allow_toppings.length > 0 ? allow_toppings.join(",") : null);
+
     const result = await query(
-      `INSERT INTO menus (category_id, name, price, description, image_url, is_available, is_recommended, created_at) 
-       VALUES (?, ?, ?, ?, ?, 1, ?, NOW())`,
-      [category_id, name, price, description || null, image_url || null, is_recommended ? 1 : 0]
+      `INSERT INTO menus (category_id, name, price, description, image_url, is_available, is_recommended, allow_toppings, created_at) 
+       VALUES (?, ?, ?, ?, ?, 1, ?, ?, NOW())`,
+      [category_id, name, price, description || null, image_url || null, is_recommended ? 1 : 0, cleanAllowToppings]
     );
 
     return NextResponse.json({ success: true, data: { id: result.insertId } });
@@ -80,11 +84,15 @@ export async function POST(request) {
 export async function PUT(request) {
   try {
     const body = await request.json();
-    const { id, name, category_id, price, description, is_recommended, image_url } = body;
+    const { id, name, category_id, price, description, is_recommended, allow_toppings = null, image_url } = body;
 
     if (!id || !name || !category_id || !price) {
       return NextResponse.json({ success: false, message: "Field wajib tidak boleh kosong" }, { status: 400 });
     }
+
+    const cleanAllowToppings = allow_toppings && typeof allow_toppings === "string" && allow_toppings.trim() !== ""
+      ? allow_toppings.trim()
+      : (Array.isArray(allow_toppings) && allow_toppings.length > 0 ? allow_toppings.join(",") : null);
 
     // Ambil data menu sebelum diupdate untuk mendapatkan URL gambar lama
     const existing = await query("SELECT image_url FROM menus WHERE id = ?", [id]);
@@ -93,9 +101,9 @@ export async function PUT(request) {
     if (image_url) {
       await query(
         `UPDATE menus 
-         SET name = ?, category_id = ?, price = ?, description = ?, image_url = ?, is_recommended = ?
+         SET name = ?, category_id = ?, price = ?, description = ?, image_url = ?, is_recommended = ?, allow_toppings = ?
          WHERE id = ?`,
-        [name, category_id, price, description || null, image_url, is_recommended ? 1 : 0, id]
+        [name, category_id, price, description || null, image_url, is_recommended ? 1 : 0, cleanAllowToppings, id]
       );
 
       // Jika ada gambar baru yang berbeda dari gambar lama, hapus gambar lama dari folder asset
@@ -105,9 +113,9 @@ export async function PUT(request) {
     } else {
       await query(
         `UPDATE menus 
-         SET name = ?, category_id = ?, price = ?, description = ?, is_recommended = ?
+         SET name = ?, category_id = ?, price = ?, description = ?, is_recommended = ?, allow_toppings = ?
          WHERE id = ?`,
-        [name, category_id, price, description || null, is_recommended ? 1 : 0, id]
+        [name, category_id, price, description || null, is_recommended ? 1 : 0, cleanAllowToppings, id]
       );
     }
 

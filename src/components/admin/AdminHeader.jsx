@@ -2,13 +2,15 @@
 
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
-import { Menu, Bell, Sun, Moon, ShoppingBag, LayoutGrid, BarChart3, X, ChefHat, Layers, QrCode } from "lucide-react";
+import { Menu, Bell, Sun, Moon, ShoppingBag, LayoutGrid, BarChart3, X, ChefHat, Layers, QrCode, Receipt, CreditCard } from "lucide-react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 
 const navItems = [
   { name: "Pesanan Aktif", path: "/admin", icon: ShoppingBag, desc: "Kelola antrean pesanan masuk" },
+  { name: "Riwayat Transaksi", path: "/admin/transactions", icon: Receipt, desc: "Daftar pesanan selesai" },
   { name: "Kelola Produk", path: "/admin/master", icon: LayoutGrid, desc: "Stok & ketersediaan menu" },
+  { name: "Metode Pembayaran", path: "/admin/payments", icon: CreditCard, desc: "Rekening & barcode QRIS" },
   { name: "Master Kategori", path: "/admin/categories", icon: Layers, desc: "Grup menu & urutan katalog" },
   { name: "Master Meja & QR", path: "/admin/tables", icon: QrCode, desc: "Kapasitas meja & cetak QR" },
   { name: "Laporan Keuangan", path: "/admin/finance", icon: BarChart3, desc: "Pemasukan & pengeluaran" },
@@ -16,7 +18,9 @@ const navItems = [
 
 const pageTitles = {
   "/admin": "Pesanan Aktif",
+  "/admin/transactions": "Riwayat Transaksi",
   "/admin/master": "Kelola Produk",
+  "/admin/payments": "Metode Pembayaran",
   "/admin/categories": "Master Kategori",
   "/admin/tables": "Master Meja & QR",
   "/admin/finance": "Laporan Keuangan",

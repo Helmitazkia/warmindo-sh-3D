@@ -32,12 +32,17 @@ export async function POST(request) {
       );
     }
 
+    // Check target folder type (e.g. payment-methods or payment-proofs)
+    const folderType = formData.get("folder") || formData.get("type") || "payment-proofs";
+    const safeFolder = folderType === "payment-methods" || folderType === "qris" ? "payment-methods" : "payment-proofs";
+    const filePrefix = safeFolder === "payment-methods" ? "qris" : "proof";
+
     // Generate unique filename
     const ext = file.name.split(".").pop() || "jpg";
-    const filename = `proof_${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`;
+    const filename = `${filePrefix}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`;
 
     // Ensure upload directory exists
-    const uploadDir = path.join(process.cwd(), "public", "uploads", "payment-proofs");
+    const uploadDir = path.join(process.cwd(), "public", "uploads", safeFolder);
     await mkdir(uploadDir, { recursive: true });
 
     // Write file
@@ -47,7 +52,7 @@ export async function POST(request) {
     await writeFile(filePath, buffer);
 
     // Return public URL
-    const publicUrl = `/uploads/payment-proofs/${filename}`;
+    const publicUrl = `/uploads/${safeFolder}/${filename}`;
 
     return NextResponse.json({
       success: true,

@@ -130,10 +130,15 @@ export async function POST(request) {
     for (const item of items) {
       const menuId = !isNaN(Number(item.id)) ? Number(item.id) : null;
       const subtotal = Number(item.price) * Number(item.qty);
+      const rawToppings = item.toppings || item.selected_toppings || item.selectedToppings;
+      const toppingsJson = rawToppings && Array.isArray(rawToppings) && rawToppings.length > 0
+        ? JSON.stringify(rawToppings)
+        : (typeof rawToppings === "string" && rawToppings.trim() !== "" ? rawToppings : null);
+
       await connection.execute(
         `INSERT INTO order_items 
-         (order_id, menu_id, menu_name, unit_price, quantity, subtotal, notes)
-         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+         (order_id, menu_id, menu_name, unit_price, quantity, subtotal, selected_toppings, notes)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           orderId,
           menuId,
@@ -141,6 +146,7 @@ export async function POST(request) {
           Number(item.price),
           Number(item.qty),
           subtotal,
+          toppingsJson,
           item.notes || null,
         ]
       );

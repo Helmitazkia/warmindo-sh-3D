@@ -27,7 +27,7 @@ export async function GET() {
     const placeholders = orderIds.map(() => "?").join(", ");
 
     const [items] = await connection.execute(
-      `SELECT oi.id, oi.order_id, oi.menu_name, oi.unit_price AS price, oi.quantity, oi.subtotal, oi.notes
+      `SELECT oi.id, oi.order_id, oi.menu_name, oi.unit_price AS price, oi.quantity, oi.subtotal, oi.selected_toppings, oi.notes
        FROM order_items oi
        WHERE oi.order_id IN (${placeholders})`,
       orderIds
@@ -43,6 +43,13 @@ export async function GET() {
           ...i,
           price: Number(i.price),
           subtotal: Number(i.subtotal),
+          toppings: (() => {
+            try {
+              return i.selected_toppings ? JSON.parse(i.selected_toppings) : [];
+            } catch {
+              return [];
+            }
+          })(),
         })),
     }));
 
@@ -77,6 +84,9 @@ export async function PATCH(request) {
       params = [id];
     } else if (action === "COMPLETED") {
       sql = "UPDATE orders SET order_status = 'COMPLETED', updated_at = NOW() WHERE id = ?";
+      params = [id];
+    } else if (action === "CANCELLED") {
+      sql = "UPDATE orders SET order_status = 'CANCELLED', updated_at = NOW() WHERE id = ?";
       params = [id];
     } else {
       return NextResponse.json(

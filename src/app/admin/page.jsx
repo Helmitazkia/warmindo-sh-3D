@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import AdminOrderCard from "@/components/admin/AdminOrderCard";
-import { Loader2, RefreshCw, X, FileText, Clock, Printer, CheckCircle2, ChefHat, ShoppingBag } from "lucide-react";
+import { Loader2, RefreshCw, X, FileText, Clock, Printer, CheckCircle2, ChefHat, ShoppingBag, Ban } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const statusConfig = {
@@ -15,6 +15,8 @@ export default function AdminDashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [filterStatus, setFilterStatus] = useState("ALL");
+  const [orderToCancel, setOrderToCancel] = useState(null);
+  const [isCancelling, setIsCancelling] = useState(false);
 
   const fetchOrders = async () => {
     setIsLoading(true);
@@ -41,7 +43,7 @@ export default function AdminDashboard() {
       });
       const json = await res.json();
       if (json.success) {
-        if (action === "COMPLETED") {
+        if (action === "COMPLETED" || action === "CANCELLED") {
           setOrders((prev) => prev.filter((o) => o.id !== id));
           if (selectedOrder?.id === id) setSelectedOrder(null);
         } else if (action === "COOKING") {
@@ -149,8 +151,28 @@ export default function AdminDashboard() {
             </div>
             <div style={{ flex: 1 }}>
               <p style={{ fontWeight: 700, fontSize: "0.9rem", color: "var(--admin-text)" }}>{item.menu_name}</p>
+              {item.toppings && item.toppings.length > 0 && (
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginTop: 4 }}>
+                  {item.toppings.map((top, idx) => (
+                    <span
+                      key={idx}
+                      style={{
+                        fontSize: "0.68rem",
+                        fontWeight: 700,
+                        background: "rgba(249,115,22,0.12)",
+                        color: "#f97316",
+                        border: "1px solid rgba(249,115,22,0.25)",
+                        padding: "2px 6px",
+                        borderRadius: 6,
+                      }}
+                    >
+                      +{top.name}
+                    </span>
+                  ))}
+                </div>
+              )}
               {item.notes && (
-                <p style={{ fontSize: "0.75rem", color: "var(--admin-yellow)", marginTop: 2 }}>
+                <p style={{ fontSize: "0.75rem", color: "var(--admin-yellow)", marginTop: 4 }}>
                   📝 {item.notes}
                 </p>
               )}
@@ -233,36 +255,60 @@ export default function AdminDashboard() {
           </button>
         </div>
 
-        <div style={{ display: "flex", gap: 10 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           {order.order_status === "PENDING" && (
-            <button
-              onClick={() => handleUpdateStatus(order.id, "COOKING")}
-              style={{
-                flex: 1,
-                padding: "14px",
-                borderRadius: 14,
-                border: "none",
-                background: "linear-gradient(135deg, #f97316, #ea580c)",
-                color: "#fff",
-                fontWeight: 800,
-                fontSize: "0.9rem",
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 8,
-                boxShadow: "0 6px 20px rgba(249,115,22,0.35)",
-                transition: "transform 0.15s",
-              }}
-            >
-              <ChefHat size={20} /> Kirim ke Dapur
-            </button>
+            <>
+              <button
+                onClick={() => handleUpdateStatus(order.id, "COOKING")}
+                style={{
+                  width: "100%",
+                  padding: "14px",
+                  borderRadius: 14,
+                  border: "none",
+                  background: "linear-gradient(135deg, #f97316, #ea580c)",
+                  color: "#fff",
+                  fontWeight: 800,
+                  fontSize: "0.9rem",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 8,
+                  boxShadow: "0 6px 20px rgba(249,115,22,0.35)",
+                  transition: "transform 0.15s",
+                }}
+              >
+                <ChefHat size={20} /> Kirim ke Dapur
+              </button>
+
+              <button
+                onClick={() => setOrderToCancel(order)}
+                style={{
+                  width: "100%",
+                  padding: "12px",
+                  borderRadius: 14,
+                  border: "1px solid rgba(239, 68, 68, 0.3)",
+                  background: "var(--admin-red-soft)",
+                  color: "var(--admin-red)",
+                  fontWeight: 700,
+                  fontSize: "0.85rem",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 8,
+                  transition: "all 0.15s",
+                }}
+              >
+                <Ban size={16} /> Batalkan Pesanan (Cancel)
+              </button>
+            </>
           )}
           {order.order_status === "COOKING" && (
             <button
               onClick={() => handleUpdateStatus(order.id, "COMPLETED")}
               style={{
-                flex: 1,
+                width: "100%",
                 padding: "14px",
                 borderRadius: 14,
                 border: "none",
@@ -407,6 +453,118 @@ export default function AdminDashboard() {
               </div>
               <div style={{ flex: 1, overflow: "hidden", display: "flex", flexDirection: "column" }}>
                 <OrderDetailPanel order={selectedOrder} onClose={() => setSelectedOrder(null)} isModal />
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Modern Dialog Konfirmasi Batalkan Pesanan */}
+      <AnimatePresence>
+        {orderToCancel && (
+          <div
+            style={{
+              position: "fixed",
+              inset: 0,
+              zIndex: 120,
+              background: "rgba(0,0,0,0.6)",
+              backdropFilter: "blur(6px)",
+              WebkitBackdropFilter: "blur(6px)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: "20px",
+            }}
+            onClick={() => !isCancelling && setOrderToCancel(null)}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 15 }}
+              transition={{ type: "spring", bounce: 0.25, duration: 0.3 }}
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                width: "100%",
+                maxWidth: 360,
+                background: "var(--admin-card-bg)",
+                border: "1px solid var(--admin-card-border)",
+                borderRadius: 24,
+                padding: "24px 20px",
+                textAlign: "center",
+                boxShadow: "0 25px 50px -12px rgba(0,0,0,0.5)",
+              }}
+            >
+              <div
+                style={{
+                  width: 56,
+                  height: 56,
+                  borderRadius: "50%",
+                  background: "var(--admin-red-soft)",
+                  color: "var(--admin-red)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  margin: "0 auto 16px",
+                  boxShadow: "0 0 20px rgba(239,68,68,0.2)",
+                }}
+              >
+                <Ban size={28} />
+              </div>
+
+              <h3 style={{ fontSize: "1.1rem", fontWeight: 800, color: "var(--admin-text)", marginBottom: 8 }}>
+                Batalkan Pesanan?
+              </h3>
+              <p style={{ fontSize: "0.85rem", color: "var(--admin-text-muted)", lineHeight: 1.45, marginBottom: 20 }}>
+                Apakah Anda yakin ingin membatalkan pesanan untuk <strong>{orderToCancel.table_number}</strong> ({orderToCancel.customer_name})? Status order akan diubah menjadi <span style={{ color: "var(--admin-red)", fontWeight: 700 }}>CANCELLED</span>.
+              </p>
+
+              <div style={{ display: "flex", gap: 10 }}>
+                <button
+                  type="button"
+                  disabled={isCancelling}
+                  onClick={() => setOrderToCancel(null)}
+                  style={{
+                    flex: 1,
+                    padding: "12px",
+                    borderRadius: 12,
+                    border: "1px solid var(--admin-border)",
+                    background: "var(--admin-surface-2)",
+                    color: "var(--admin-text)",
+                    fontWeight: 700,
+                    fontSize: "0.85rem",
+                    cursor: "pointer",
+                  }}
+                >
+                  Kembali
+                </button>
+                <button
+                  type="button"
+                  disabled={isCancelling}
+                  onClick={async () => {
+                    setIsCancelling(true);
+                    await handleUpdateStatus(orderToCancel.id, "CANCELLED");
+                    setIsCancelling(false);
+                    setOrderToCancel(null);
+                  }}
+                  style={{
+                    flex: 1,
+                    padding: "12px",
+                    borderRadius: 12,
+                    border: "none",
+                    background: "linear-gradient(135deg, #ef4444, #dc2626)",
+                    color: "#fff",
+                    fontWeight: 800,
+                    fontSize: "0.85rem",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 6,
+                    boxShadow: "0 4px 14px rgba(239,68,68,0.35)",
+                  }}
+                >
+                  {isCancelling ? <Loader2 className="animate-spin" size={16} /> : "Ya, Batalkan"}
+                </button>
               </div>
             </motion.div>
           </div>
